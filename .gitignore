@@ -4,3 +4,4 @@
 *.identcache
 *.local
 __history/
+*.raw
