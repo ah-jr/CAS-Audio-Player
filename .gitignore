@@ -5,3 +5,6 @@
 *.local
 __history/
 *.raw
+
+!bin/ffmpeg/*.exe
+!bin/ffmpeg/*.dll
