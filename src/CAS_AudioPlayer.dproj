@@ -106,9 +106,10 @@
             <Form>Form1</Form>
             <FormType>dfm</FormType>
         </DCCReference>
-        <DCCReference Include="deps\asio\asiolist.pas"/>
-        <DCCReference Include="deps\asio\asio.pas"/>
-        <DCCReference Include="deps\asio\openasio\OpenASIO.pas"/>
+        <DCCReference Include="..\deps\asio\asiolist.pas"/>
+        <DCCReference Include="..\deps\asio\asio.pas"/>
+        <DCCReference Include="..\deps\asio\openasio.pas"/>
+        <DCCReference Include="..\deps\CasAudioEngine\CasEngine.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
