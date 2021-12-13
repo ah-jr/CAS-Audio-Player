@@ -17,24 +17,27 @@ interface
 uses
   Winapi.Windows,
   Winapi.Messages,
-  System.SysUtils,
-  System.Variants,
   System.Classes,
-  System.ImageList,
+  System.SysUtils,
   System.UITypes,
+  System.ImageList,
+  Vcl.ComCtrls,
+  Vcl.StdCtrls,
+  Vcl.Dialogs,
   Vcl.Graphics,
   Vcl.Controls,
   Vcl.Forms,
-  Vcl.Dialogs,
-  Vcl.StdCtrls,
-  Vcl.ComCtrls,
   Vcl.ImgList,
   AsioList,
   OpenAsio,
   Asio,
   Math,
   ShellApi,
-  IOUtils;
+  IOUtils,
+  AudioManagerU,
+  CasEngineU,
+  CasDecoderU;
+
 
 const
   PM_ASIO             = WM_User + 1652;
@@ -90,6 +93,8 @@ type
     m_bBuffersCreated            : Boolean;
     m_bIsStarted                 : Boolean;
 
+    m_CasEngine                  : TCasEngine;
+
     m_AsioDriver                 : IOpenAsio;
     m_DriverList                 : TAsioDriverList;
     m_Callbacks                  : TASIOCallbacks;
@@ -124,11 +129,7 @@ implementation
 
 {$R *.dfm}
 
-////////////////////////////////////////////////////////////////////////////////
-//
-//   AsioBufferSwitch
-//
-////////////////////////////////////////////////////////////////////////////////
+//==============================================================================
 procedure AsioBufferSwitch(DoubleBufferIndex: LongInt; DirectProcess: TASIOBool); cdecl;
 begin
   case DirectProcess of
@@ -137,21 +138,13 @@ begin
   end;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
-//
-//   AsioSampleRateDidChange
-//
-////////////////////////////////////////////////////////////////////////////////
+//==============================================================================
 procedure AsioSampleRateDidChange(sRate: TASIOSampleRate); cdecl;
 begin
   MessageDlg('The sample rate has been changed to ' + FloatToStr(sRate), mtInformation, [mbOK], 0);
 end;
 
-////////////////////////////////////////////////////////////////////////////////
-//
-//   AsioMessage
-//
-////////////////////////////////////////////////////////////////////////////////
+//==============================================================================
 function AsioMessage(Selector, Value: LongInt; message: Pointer; Ppt: PDouble): LongInt; cdecl;
 begin
   Result := 0;
@@ -193,11 +186,7 @@ begin
   end;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
-//
-//   AsioBufferSwitchTimeInfo
-//
-////////////////////////////////////////////////////////////////////////////////
+//==============================================================================
 function AsioBufferSwitchTimeInfo(var Params: TASIOTime; DoubleBufferIndex: LongInt; DirectProcess: TASIOBool): PASIOTime; cdecl;
 begin
   case directProcess of
@@ -212,11 +201,7 @@ begin
   Result := nil;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
-//
-//   PMAsio : Receives and process messages from ASIO
-//
-////////////////////////////////////////////////////////////////////////////////
+//==============================================================================
 procedure TPlayerGUI.PMAsio(var Message: TMessage);
 var
    inp, outp: integer;
@@ -233,11 +218,7 @@ begin
   end;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
-//
-//   BufferSwitch
-//
-////////////////////////////////////////////////////////////////////////////////
+//==============================================================================
 procedure TPlayerGUI.BufferSwitch(a_nIndex : Integer);
 begin
   FillChar(m_BufferTime, SizeOf(TAsioTime), 0);
@@ -248,11 +229,7 @@ begin
   BufferSwitchTimeInfo(a_nIndex, m_BufferTime)
 end;
 
-////////////////////////////////////////////////////////////////////////////////
-//
-//   BufferSwitchTimeInfo
-//
-////////////////////////////////////////////////////////////////////////////////
+//==============================================================================
 procedure TPlayerGUI.BufferSwitchTimeInfo(a_nIndex : Integer; const Params : TAsioTime);
 var
    nChannelIdx : Integer;
@@ -324,11 +301,7 @@ begin
   ChangeEnabledObjects
 end;
 
-////////////////////////////////////////////////////////////////////////////////
-//
-//   FormCreate
-//
-////////////////////////////////////////////////////////////////////////////////
+//==============================================================================
 procedure TPlayerGUI.FormCreate(Sender: TObject);
 begin
   Caption     := 'CAS Audio Player';
@@ -338,11 +311,7 @@ begin
   ChangeEnabledObjects;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
-//
-//   FormDestroy
-//
-////////////////////////////////////////////////////////////////////////////////
+//==============================================================================
 procedure TPlayerGUI.FormDestroy(Sender: TObject);
 begin
   DestroyBuffers;
@@ -350,11 +319,7 @@ begin
   SetLength(m_DriverList, 0);
 end;
 
-////////////////////////////////////////////////////////////////////////////////
-//
-//   cbDriverChange
-//
-////////////////////////////////////////////////////////////////////////////////
+//==============================================================================
 procedure TPlayerGUI.cbDriverChange(Sender: TObject);
 begin
   if m_AsioDriver <> nil then
@@ -372,11 +337,7 @@ begin
   ChangeEnabledObjects;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
-//
-//   btnOpenFileClick
-//
-////////////////////////////////////////////////////////////////////////////////
+//==============================================================================
 procedure TPlayerGUI.btnOpenFileClick(Sender: TObject);
 var
   nSampleIdx : Integer;
@@ -407,22 +368,14 @@ begin
   end;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
-//
-//   btnDriverControlPanelClick
-//
-////////////////////////////////////////////////////////////////////////////////
+//==============================================================================
 procedure TPlayerGUI.btnDriverControlPanelClick(Sender: TObject);
 begin
   if (m_AsioDriver <> nil) then
     m_AsioDriver.ControlPanel;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
-//
-//   btnPlayClick
-//
-////////////////////////////////////////////////////////////////////////////////
+//==============================================================================
 procedure TPlayerGUI.btnPlayClick(Sender: TObject);
 begin
   if m_AsioDriver <> nil then
@@ -432,11 +385,7 @@ begin
   end;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
-//
-//   btnPauseClick
-//
-////////////////////////////////////////////////////////////////////////////////
+//==============================================================================
 procedure TPlayerGUI.btnPauseClick(Sender: TObject);
 begin
   if m_AsioDriver <> nil then
@@ -451,11 +400,7 @@ begin
   end;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
-//
-//   btnStopClick
-//
-////////////////////////////////////////////////////////////////////////////////
+//==============================================================================
 procedure TPlayerGUI.btnStopClick(Sender: TObject);
 begin
   if m_AsioDriver <> nil then
@@ -473,31 +418,18 @@ begin
   end;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
-//
-//   tbVolumeChange
-//
-////////////////////////////////////////////////////////////////////////////////
+//==============================================================================
 procedure TPlayerGUI.tbVolumeChange(Sender: TObject);
 begin
   m_nAudioLevel := (tbVolume.Max - tbVolume.Position) / tbVolume.Max;
 end;
-
-////////////////////////////////////////////////////////////////////////////////
-//
-//   tbProgressChange
-//
-////////////////////////////////////////////////////////////////////////////////
+//==============================================================================
 procedure TPlayerGUI.tbProgressChange(Sender: TObject);
 begin
   UpdateBufferPosition;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
-//
-//   DecodeFile
-//
-////////////////////////////////////////////////////////////////////////////////
+//==============================================================================
 procedure TPlayerGUI.DecodeFile(a_strFileName : String);
 var
   strCommand  : String;
@@ -523,11 +455,7 @@ begin
   end;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
-//
-//   PopulateBuffers
-//
-////////////////////////////////////////////////////////////////////////////////
+//==============================================================================
 procedure TPlayerGUI.PopulateBuffers(a_aobInputPCMData : TBytes);
 var
   nSampleIdx         : Integer;
@@ -564,11 +492,7 @@ begin
   end;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
-//
-//   ExecuteAndWait : Executes a shell command and waits for it to finish
-//
-////////////////////////////////////////////////////////////////////////////////
+//==============================================================================
 procedure TPlayerGUI.ExecuteAndWait(a_strCommand : string);
 var
   tmpStartupInfo        : TStartupInfo;
@@ -599,15 +523,13 @@ begin
   end;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
-//
-//   InitializeVariables
-//
-////////////////////////////////////////////////////////////////////////////////
+//==============================================================================
 procedure TPlayerGUI.InitializeVariables;
 var
   nDriverIdx : Integer;
 begin
+  m_CasEngine := TCasEngine.Create(Self);
+
   m_nAudioLevel                := 0.7;
   tbVolume.Position            := 30;
 
@@ -629,11 +551,7 @@ begin
     cbDriver.Items.Add(String(m_DriverList[nDriverIdx].name));
 end;
 
-////////////////////////////////////////////////////////////////////////////////
-//
-//  ChangeEnabledObjects
-//
-////////////////////////////////////////////////////////////////////////////////
+//==============================================================================
 procedure TPlayerGUI.ChangeEnabledObjects;
 begin
   btnDriverControlPanel.Enabled := (m_AsioDriver <> nil);
@@ -646,11 +564,7 @@ begin
   btnStop.Enabled               := m_bIsStarted;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
-//
-//   CloseDriver
-//
-////////////////////////////////////////////////////////////////////////////////
+//==============================================================================
 procedure TPlayerGUI.CloseDriver;
 begin
   if m_AsioDriver <> nil then
@@ -667,11 +581,7 @@ begin
   ChangeEnabledObjects;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
-//
-//   UpdateBufferPosition
-//
-////////////////////////////////////////////////////////////////////////////////
+//==============================================================================
 procedure TPlayerGUI.UpdateBufferPosition;
 begin
   if not m_bBlockBufferPositionUpdate then
@@ -683,11 +593,7 @@ begin
     end;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
-//
-//   CreateBuffers
-//
-////////////////////////////////////////////////////////////////////////////////
+//==============================================================================
 procedure TPlayerGUI.CreateBuffers;
 var
    nMin          : Integer;
@@ -738,11 +644,7 @@ begin
   end;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
-//
-//   DestroyBuffers
-//
-////////////////////////////////////////////////////////////////////////////////
+//==============================================================================
 procedure TPlayerGUI.DestroyBuffers;
 begin
   if (m_AsioDriver <> nil) and m_bBuffersCreated then
@@ -758,11 +660,7 @@ begin
   end;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
-//
-//   UpdateProgressBar
-//
-////////////////////////////////////////////////////////////////////////////////
+//==============================================================================
 procedure TPlayerGUI.UpdateProgressBar;
 begin
   m_nTrackProgress := m_nLeftChannelBufferIndex / m_nTrackSize;

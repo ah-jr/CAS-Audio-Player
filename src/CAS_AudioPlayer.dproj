@@ -106,10 +106,14 @@
             <Form>Form1</Form>
             <FormType>dfm</FormType>
         </DCCReference>
-        <DCCReference Include="..\deps\asio\asiolist.pas"/>
-        <DCCReference Include="..\deps\asio\asio.pas"/>
-        <DCCReference Include="..\deps\asio\openasio.pas"/>
-        <DCCReference Include="..\deps\CasAudioEngine\CasEngine.pas"/>
+        <DCCReference Include="AudioManagerU.pas"/>
+        <DCCReference Include="..\deps\CasAudioEngine\CasEngineU.pas"/>
+        <DCCReference Include="..\deps\CasUtils\CasTrackU.pas"/>
+        <DCCReference Include="..\deps\CasUtils\CasMessagesU.pas"/>
+        <DCCReference Include="..\deps\CasUtils\CasDecoderU.pas"/>
+        <DCCReference Include="..\deps\CasAudioEngine\Asio\AsioList.pas"/>
+        <DCCReference Include="..\deps\CasAudioEngine\Asio\Asio.pas"/>
+        <DCCReference Include="..\deps\CasAudioEngine\Asio\OpenAsio.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
@@ -136,7 +140,7 @@
                 </Excluded_Packages>
             </Delphi.Personality>
             <Deployment Version="3">
-                <DeployFile LocalName="Win32\Debug\CAS_AudioPlayer.exe" Configuration="Debug" Class="ProjectOutput">
+                <DeployFile LocalName="..\bin\CAS_AudioPlayer.exe" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win32">
                         <RemoteName>CAS_AudioPlayer.exe</RemoteName>
                         <Overwrite>true</Overwrite>
