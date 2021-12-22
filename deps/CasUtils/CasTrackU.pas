@@ -33,7 +33,7 @@ type
     m_nID       : Integer;
     m_strTitle  : String;
     m_nPosition : Integer;
-    m_nLevel    : Integer;
+    m_dLevel    : Double;
     m_RawData   : PRawData;
     m_nProgress : Double;
 
@@ -54,10 +54,9 @@ type
     property Position    : Integer  read m_nPosition   write SetPosition;
 
     property RawData     : PRawData read m_RawData     write m_RawData;
-    property Level       : Integer  read m_nLevel      write m_nLevel;
+    property Level       : Double   read m_dLevel      write m_dLevel;
     property Progress    : Double   read GetProgress;
     property Size        : Integer  read GetSize;
-
 
   end;
 
@@ -72,7 +71,7 @@ begin
   m_nID       := 0;
   m_strTitle  := '';
   m_nPosition := 0;
-  m_nLevel    := 100;
+  m_dLevel    := 1;
   m_nProgress := 0;
 end;
 

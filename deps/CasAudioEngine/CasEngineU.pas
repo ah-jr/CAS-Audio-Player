@@ -5,6 +5,7 @@ interface
 uses
   Winapi.Windows,
   Winapi.Messages,
+  System.Generics.Collections,
   CasTrackU,
   CasMessagesU,
   AsioList,
@@ -29,15 +30,12 @@ type
   private
     m_hwndHandle                 : HWND;
     m_Owner                      : TObject;
+    m_MainTrack                  : TCasTrack;
 
-    m_nRightChannelData          : Array of Integer;
-    m_nLeftChannelData           : Array of Integer;
-    m_nLeftChannelBufferIndex    : Integer;
-    m_nRightChannelBufferIndex   : Integer;
-    m_nTrackSize                 : Integer;
+    m_dctTracks                  : TDictionary<Integer, TCasTrack>;
+    m_lstTracks                  : TList<TCasTrack>;
+
     m_nCurrentBufferSize         : Integer;
-    m_nAudioLevel                : Double;
-    m_nTrackProgress             : Double;
     m_bBlockBufferPositionUpdate : Boolean;
     m_bFileLoaded                : Boolean;
     m_bBuffersCreated            : Boolean;
@@ -64,10 +62,30 @@ type
     procedure Pause;
     procedure Stop;
 
+    function  GetLevel    : Double;
+    function  GetPosition : Integer;
+    function  GetProgress : Double;
+    function  GetLength   : Integer;
+
+    procedure SetLevel   (a_dLevel : Double);
+    procedure SetPosition(a_nPosition : Integer);
+
+    procedure AddTrack(a_CasTrack : TCasTrack);
+    procedure ClearTracks;
+    procedure ChangeDriver(a_nID : Integer);
+
     procedure BufferSwitch         (a_nIndex : Integer);
     procedure BufferSwitchTimeInfo (a_nIndex : Integer; const Params : TAsioTime);
 
     procedure CMAsio(var Message: TMessage); message CM_ASIO;
+
+    property Level      : Double    read GetLevel     write SetLevel;
+    property Position   : Integer   read GetPosition  write SetPosition;
+    property Progress   : Double    read GetProgress;
+    property Length     : Integer   read GetLength;
+
+    property Playing    : Boolean   read m_bIsStarted;
+    property BuffersOn  : Boolean   read m_bBuffersCreated;
 
     property BufferTime : TAsioTime read m_BufferTime write m_BufferTime;
     property Handle     : HWND      read m_hwndHandle write m_hwndHandle;
@@ -169,13 +187,15 @@ end;
 
 //==============================================================================
 procedure TCasEngine.InitializeVariables;
-var
-  nDriverIdx : Integer;
 begin
   m_hwndHandle := AllocateHWnd(ProcessMessage);
 
-  m_nAudioLevel                := 0.7;
-//  tbVolume.Position            := 30;
+  m_dctTracks := TDictionary<Integer, TCasTrack>.Create;
+  m_lstTracks := TList<TCasTrack>.Create;
+
+  m_MainTrack := TCasTrack.Create;
+
+  m_MainTrack.Level := 1;
 
   m_Callbacks.BufferSwitch         := AsioBufferSwitch;
   m_Callbacks.AsioMessage          := AsioMessage;
@@ -191,8 +211,43 @@ begin
 
   SetLength(m_DriverList, 0);
   ListAsioDrivers(m_DriverList);
-//  for nDriverIdx := Low(m_DriverList) to High(m_DriverList) do
-//    cbDriver.Items.Add(String(m_DriverList[nDriverIdx].name));
+end;
+
+//==============================================================================
+procedure TCasEngine.AddTrack(a_CasTrack : TCasTrack);
+begin
+  m_dctTracks.AddOrSetValue(a_CasTrack.ID, a_CasTrack);
+  m_lstTracks.Add(a_CasTrack);
+end;
+
+//==============================================================================
+procedure TCasEngine.ClearTracks;
+var
+  CasTrack : TCasTrack;
+begin
+  for CasTrack in m_lstTracks do
+  begin
+    CasTrack.Free;
+  end;
+
+  m_dctTracks.Clear;
+  m_lstTracks.Clear;
+end;
+
+//==============================================================================
+procedure TCasEngine.ChangeDriver(a_nID : Integer);
+begin
+  if m_AsioDriver <> nil then
+    CloseDriver;
+
+  if a_nID >= 0 then
+  begin
+    if OpenAsioCreate(m_DriverList[a_nID].Id, m_AsioDriver) then
+      if (m_AsioDriver <> nil) then
+        if not Succeeded(m_AsioDriver.Init(Handle))
+          then m_AsioDriver := nil
+          else CreateBuffers;
+  end;
 end;
 
 //==============================================================================
@@ -240,15 +295,19 @@ end;
 //==============================================================================
 procedure TCasEngine.BufferSwitchTimeInfo(a_nIndex : Integer; const Params : TAsioTime);
 var
-   nChannelIdx : Integer;
-   nBufferIdx  : Integer;
-   Info        : PAsioBufferInfo;
-   OutputInt32 : PInteger;
+   nChannelIdx              : Integer;
+   nBufferIdx               : Integer;
+   Info                     : PAsioBufferInfo;
+   OutputInt32              : PInteger;
+   nLeftChannelBufferIndex  : Integer;
+   nRightChannelBufferIndex : Integer;
 begin
-  if (m_nLeftChannelBufferIndex  < Length(m_nLeftChannelData)  - m_nCurrentBufferSize) and
-     (m_nRightChannelBufferIndex < Length(m_nRightChannelData) - m_nCurrentBufferSize) then
+  if (m_MainTrack.Position  < m_MainTrack.Size  - m_nCurrentBufferSize) then
   begin
     Info := m_BufferInfo;
+
+    nLeftChannelBufferIndex  := m_MainTrack.Position;
+    nRightChannelBufferIndex := m_MainTrack.Position;
 
     for nChannelIdx := 0 to c_nChannelCount - 1 do
     begin
@@ -273,13 +332,13 @@ begin
             begin
               if nChannelIdx = 0 then
                 begin
-                  OutputInt32^ := Trunc(Power(2, 32 - c_nBitDepth) * m_nLeftChannelData[m_nLeftChannelBufferIndex] * m_nAudioLevel);
-                  Inc(m_nLeftChannelBufferIndex);
+                  OutputInt32^ := Trunc(Power(2, 32 - c_nBitDepth) * m_MainTrack.RawData.Left[nLeftChannelBufferIndex] * m_MainTrack.Level);
+                  Inc(nLeftChannelBufferIndex);
                 end
               else
                 begin
-                  OutputInt32^ := Trunc(Power(2, 32 - c_nBitDepth) * m_nRightChannelData[m_nRightChannelBufferIndex] * m_nAudioLevel);
-                  Inc(m_nRightChannelBufferIndex);
+                  OutputInt32^ := Trunc(Power(2, 32 - c_nBitDepth) * m_MainTrack.RawData.Right[nRightChannelBufferIndex] * m_MainTrack.Level);
+                  Inc(nRightChannelBufferIndex);
                 end;
 
               inc(OutputInt32);
@@ -296,13 +355,14 @@ begin
       Inc(Info);
     end;
 
+    m_MainTrack.Position := nLeftChannelBufferIndex;
+
     PostMessage(Handle, CM_UpdateSamplePos, Params.TimeInfo.SamplePosition.Hi, Params.TimeInfo.SamplePosition.Lo);
     m_AsioDriver.OutputReady;
   end
   else
   begin
-    m_nLeftChannelBufferIndex  := 0;
-    m_nRightChannelBufferIndex := 0;
+    m_MainTrack.Position := 0;
   end;
 
   //UpdateProgressBar;
@@ -423,19 +483,50 @@ procedure TCasEngine.Stop;
 begin
   if m_AsioDriver <> nil then
   begin
-    if m_bIsStarted then
-    begin
-      m_AsioDriver.Stop;
-      m_bIsStarted := False;
-    end;
-
-    m_nLeftChannelBufferIndex  := 0;
-    m_nRightChannelBufferIndex := 0;
+    Pause;
+    m_MainTrack.Position := 0;
 //    UpdateProgressBar;
 //    ChangeEnabledObjects;
   end;
 end;
 
+//==============================================================================
+function TCasEngine.GetLevel : Double;
+begin
+  Result := m_MainTrack.Level;
+end;
+
+//==============================================================================
+function TCasEngine.GetPosition : Integer;
+begin
+  Result := m_MainTrack.Position;
+end;
+
+//==============================================================================
+function TCasEngine.GetProgress : Double;
+begin
+  Result := m_MainTrack.Progress;
+end;
+
+//==============================================================================
+function TCasEngine.GetLength : Integer;
+begin
+  Result := m_MainTrack.Size;
+end;
+
+//==============================================================================
+procedure TCasEngine.SetLevel(a_dLevel : Double);
+begin
+  m_MainTrack.Level := a_dLevel;
+end;
+
+//==============================================================================
+procedure TCasEngine.SetPosition(a_nPosition : Integer);
+begin
+  m_MainTrack.Position := a_nPosition;
+end;
+
+//==============================================================================
 end.
 
 
