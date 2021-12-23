@@ -109,8 +109,11 @@
         <DCCReference Include="AudioManagerU.pas"/>
         <DCCReference Include="..\deps\CasAudioEngine\CasEngineU.pas"/>
         <DCCReference Include="..\deps\CasUtils\CasTrackU.pas"/>
-        <DCCReference Include="..\deps\CasUtils\CasMessagesU.pas"/>
+        <DCCReference Include="..\deps\CasUtils\CasMixerU.pas"/>
+        <DCCReference Include="..\deps\CasUtils\CasPlaylistU.pas"/>
+        <DCCReference Include="..\deps\CasUtils\CasConstantsU.pas"/>
         <DCCReference Include="..\deps\CasUtils\CasDecoderU.pas"/>
+        <DCCReference Include="..\deps\CasUtils\CasDatabaseU.pas"/>
         <DCCReference Include="..\deps\CasAudioEngine\Asio\AsioList.pas"/>
         <DCCReference Include="..\deps\CasAudioEngine\Asio\Asio.pas"/>
         <DCCReference Include="..\deps\CasAudioEngine\Asio\OpenAsio.pas"/>

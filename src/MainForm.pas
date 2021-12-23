@@ -39,23 +39,6 @@ uses
   CasDecoderU,
   CasTrackU;
 
-
-const
-  PM_ASIO             = WM_User + 1652;
-  PM_UpdateSamplePos  = PM_ASIO + 1;
-
-  AM_ResetRequest         = 0;
-  AM_BufferSwitch         = 1;
-  AM_BufferSwitchTimeInfo = 2;
-  AM_LatencyChanged       = 3;
-
-  c_nBitDepth       = 24;
-  c_nChannelCount   = 2;
-  c_nByteSize       = 8;
-  c_nBytesInChannel = 3;
-  c_nBytesInSample  = 6;
-
-
 type
   TPlayerGUI = class(TForm)
     btnOpenFile: TButton;
@@ -88,7 +71,6 @@ type
     m_CasDecoder                 : TCasDecoder;
     m_CasTrack                   : TCasTrack;
 
-    m_AsioDriver                 : IOpenAsio;
     m_DriverList                 : TAsioDriverList;
 
     procedure InitializeVariables;
@@ -138,33 +120,30 @@ procedure TPlayerGUI.btnOpenFileClick(Sender: TObject);
 var
   dSampleRate : Double;
 begin
-  if (m_AsioDriver <> nil) then
+  if odOpenFile.Execute then
   begin
-    if odOpenFile.Execute then
-    begin
-      m_bFileLoaded := True;
+    m_bFileLoaded := True;
 
-      try
-        m_CasEngine.ClearTracks;
-        m_AsioDriver.GetSampleRate(dSampleRate);
+    try
+      m_CasEngine.ClearTracks;
+      dSampleRate := m_CasEngine.SampleRate;
 
-        m_CasTrack       := m_CasDecoder.DecodeFile(odOpenFile.FileName, dSampleRate);
-        m_CasTrack.Level := 0.7;
-        m_CasEngine.AddTrack(m_CasTrack);
-      except
-        m_bFileLoaded := False;
-      end;
+      m_CasTrack       := m_CasDecoder.DecodeFile(odOpenFile.FileName, dSampleRate);
+      m_CasTrack.Level := 0.7;
+      m_CasEngine.AddTrack(m_CasTrack);
+    except
+      m_bFileLoaded := False;
     end;
-
-    ChangeEnabledObjects;
   end;
+
+  ChangeEnabledObjects;
 end;
 
 //==============================================================================
 procedure TPlayerGUI.btnDriverControlPanelClick(Sender: TObject);
 begin
-  if (m_AsioDriver <> nil) then
-    m_AsioDriver.ControlPanel;
+  if m_CasEngine.Ready then
+    m_CasEngine.AsioDriver.ControlPanel;
 end;
 
 //==============================================================================
@@ -219,9 +198,9 @@ end;
 //==============================================================================
 procedure TPlayerGUI.ChangeEnabledObjects;
 begin
-  btnDriverControlPanel.Enabled := (m_AsioDriver <> nil);
-  btnOpenFile.Enabled           := (m_AsioDriver <> nil);
-  btnPlay.Enabled               := (m_AsioDriver <> nil)     and
+  btnDriverControlPanel.Enabled := (m_CasEngine.Ready);
+  btnOpenFile.Enabled           := (m_CasEngine.Ready);
+  btnPlay.Enabled               := (m_CasEngine.Ready)       and
                                    (m_CasEngine.BuffersOn)   and
                                    (not m_CasEngine.Playing) and
                                    (m_bFileLoaded);

@@ -8,8 +8,11 @@ uses
   // Cas Libraries
   CasEngineU    in '..\deps\CasAudioEngine\CasEngineU.pas',
   CasTrackU     in '..\deps\CasUtils\CasTrackU.pas',
-  CasMessagesU  in '..\deps\CasUtils\CasMessagesU.pas',
+  CasMixerU     in '..\deps\CasUtils\CasMixerU.pas',
+  CasPlaylistU  in '..\deps\CasUtils\CasPlaylistU.pas',
+  CasConstantsU in '..\deps\CasUtils\CasConstantsU.pas',
   CasDecoderU   in '..\deps\CasUtils\CasDecoderU.pas',
+  CasDatabaseU  in '..\deps\CasUtils\CasDatabaseU.pas',
 
   // ASIO
   Asiolist      in '..\deps\CasAudioEngine\Asio\AsioList.pas',

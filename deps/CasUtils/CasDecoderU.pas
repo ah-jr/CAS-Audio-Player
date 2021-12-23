@@ -23,8 +23,8 @@ implementation
 
 uses
   Winapi.Windows,
-  Math;
-
+  Math,
+  CasConstantsU;
 
 //==============================================================================
 function TCasDecoder.DecodeFile(a_strFileName : String; a_dSampleRate : Double)  : TCasTrack;

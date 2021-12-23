@@ -7,22 +7,13 @@ uses
   Winapi.Messages,
   System.Generics.Collections,
   CasTrackU,
-  CasMessagesU,
+  CasConstantsU,
+  CasMixerU,
+  CasDatabaseU,
+  CasPlaylistU,
   AsioList,
   OpenAsio,
   Asio;
-
-const
-  AM_ResetRequest         = 0;
-  AM_BufferSwitch         = 1;
-  AM_BufferSwitchTimeInfo = 2;
-  AM_LatencyChanged       = 3;
-
-  c_nBitDepth       = 24;
-  c_nChannelCount   = 2;
-  c_nByteSize       = 8;
-  c_nBytesInChannel = 3;
-  c_nBytesInSample  = 6;
 
 type
   TCasEngine = class(TObject)
@@ -30,10 +21,10 @@ type
   private
     m_hwndHandle                 : HWND;
     m_Owner                      : TObject;
-    m_MainTrack                  : TCasTrack;
+    m_MainMixer                  : TCasMixer;
 
-    m_dctTracks                  : TDictionary<Integer, TCasTrack>;
-    m_lstTracks                  : TList<TCasTrack>;
+    m_CasDatabase                : TCasDatabase;
+    m_CasPlaylist                : TCasPlaylist;
 
     m_nCurrentBufferSize         : Integer;
     m_bBlockBufferPositionUpdate : Boolean;
@@ -62,10 +53,12 @@ type
     procedure Pause;
     procedure Stop;
 
-    function  GetLevel    : Double;
-    function  GetPosition : Integer;
-    function  GetProgress : Double;
-    function  GetLength   : Integer;
+    function  GetLevel      : Double;
+    function  GetPosition   : Integer;
+    function  GetProgress   : Double;
+    function  GetLength     : Integer;
+    function  GetReady      : Boolean;
+    function  GetSampleRate : Double;
 
     procedure SetLevel   (a_dLevel : Double);
     procedure SetPosition(a_nPosition : Integer);
@@ -84,8 +77,12 @@ type
     property Progress   : Double    read GetProgress;
     property Length     : Integer   read GetLength;
 
+    property Ready      : Boolean   read GetReady;
     property Playing    : Boolean   read m_bIsStarted;
     property BuffersOn  : Boolean   read m_bBuffersCreated;
+    property SampleRate : Double    read GetSampleRate;
+
+    property AsioDriver : IOpenAsio read m_AsioDriver write m_AsioDriver;
 
     property BufferTime : TAsioTime read m_BufferTime write m_BufferTime;
     property Handle     : HWND      read m_hwndHandle write m_hwndHandle;
@@ -173,7 +170,8 @@ end;
 //==============================================================================
 constructor TCasEngine.Create(a_Owner : TObject);
 begin
-  m_Owner := a_Owner;
+  m_Owner   := a_Owner;
+  CasEngine := Self;
 
   InitializeVariables;
 end;
@@ -190,12 +188,13 @@ procedure TCasEngine.InitializeVariables;
 begin
   m_hwndHandle := AllocateHWnd(ProcessMessage);
 
-  m_dctTracks := TDictionary<Integer, TCasTrack>.Create;
-  m_lstTracks := TList<TCasTrack>.Create;
+  m_CasDatabase := TCasDatabase.Create;
+  m_CasPlaylist := TCasPlaylist.Create(m_CasDatabase);
 
-  m_MainTrack := TCasTrack.Create;
+  m_MainMixer := TCasMixer.Create;
+  m_MainMixer.Level := 1;
 
-  m_MainTrack.Level := 1;
+  m_CasDatabase.AddMixer(m_MainMixer);
 
   m_Callbacks.BufferSwitch         := AsioBufferSwitch;
   m_Callbacks.AsioMessage          := AsioMessage;
@@ -302,7 +301,7 @@ var
    nLeftChannelBufferIndex  : Integer;
    nRightChannelBufferIndex : Integer;
 begin
-  if (m_MainTrack.Position  < m_MainTrack.Size  - m_nCurrentBufferSize) then
+  if (m_MainTrack.Position < m_MainTrack.Size - m_nCurrentBufferSize) then
   begin
     Info := m_BufferInfo;
 
@@ -512,6 +511,25 @@ end;
 function TCasEngine.GetLength : Integer;
 begin
   Result := m_MainTrack.Size;
+end;
+
+//==============================================================================
+function TCasEngine.GetReady : Boolean;
+begin
+  Result := m_AsioDriver <> nil;
+end;
+
+//==============================================================================
+function TCasEngine.GetSampleRate : Double;
+begin
+  if Ready then
+  begin
+    try
+      m_AsioDriver.GetSampleRate(Result);
+    except
+      Result := 0;
+    end;
+  end;
 end;
 
 //==============================================================================

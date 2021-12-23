@@ -6,20 +6,6 @@ uses
   Winapi.Windows,
   Winapi.Messages;
 
-const
-  //////////////////////////////////////////////////////////////////////////////
-  // Send these to another file later
-  AM_ResetRequest         = 0;
-  AM_BufferSwitch         = 1;
-  AM_BufferSwitchTimeInfo = 2;
-  AM_LatencyChanged       = 3;
-
-  c_nBitDepth       = 24;
-  c_nChannelCount   = 2;
-  c_nByteSize       = 8;
-  c_nBytesInChannel = 3;
-  c_nBytesInSample  = 6;
-
 type
   TRawData = record
     Right : Array of Integer;
@@ -37,8 +23,6 @@ type
     m_RawData   : PRawData;
     m_nProgress : Double;
 
-    constructor Create;
-
     procedure Normalize;
 
     procedure SetPosition(a_nPosition : Integer);
@@ -48,6 +32,7 @@ type
 
 
   public
+    constructor Create;
 
     property ID          : Integer  read m_nID         write m_nID;
     property Title       : String   read m_strTitle    write m_strTitle;
@@ -63,7 +48,8 @@ type
 implementation
 
 uses
-  Math;
+  Math,
+  CasConstantsU;
 
 //==============================================================================
 constructor TCasTrack.Create;
@@ -96,7 +82,12 @@ end;
 //==============================================================================
 function TCasTrack.GetSize : Integer;
 begin
-  Result := Length(m_RawData.Right) div c_nBytesInSample;
+  if m_RawData <> nil then
+  begin
+    Result := Length(m_RawData.Right) div c_nBytesInSample;
+  end
+  else
+    Result := 0;
 end;
 
 
