@@ -14,6 +14,7 @@ type
   private
     m_nPosition : Integer;
     m_nProgress : Double;
+    m_lstTracks : TList<Integer>;
 
     m_CasDatabase : TCasDatabase;
 
@@ -26,9 +27,13 @@ type
     constructor Create(a_CasDatabase: TCasDatabase);
     destructor  Destroy;
 
+    procedure AddTrack   (a_nID: Integer);
+    procedure RemoveTrack(a_nID: Integer);
+    procedure ClearTracks;
+
     property Progress    : Double   read GetProgress;
     property Position    : Integer  read m_nPosition   write SetPosition;
-    property TotalLength : Integer  read GetLength;
+    property Length      : Integer  read GetLength;
 
   end;
 
@@ -36,18 +41,21 @@ implementation
 
 uses
   Math,
-  CasConstantsU;
+  CasConstantsU,
+  CasTrackU;
 
 //==============================================================================
 constructor TCasPlaylist.Create(a_CasDatabase: TCasDatabase);
 begin
   m_CasDatabase := a_CasDatabase;
+
+  m_lstTracks := TList<Integer>.Create;
 end;
 
 //==============================================================================
 destructor TCasPlaylist.Destroy;
 begin
-//
+  m_lstTracks.Free;
 end;
 
 //==============================================================================
@@ -64,13 +72,36 @@ end;
 
 //==============================================================================
 function TCasPlaylist.GetLength : Integer;
+var
+  nTrackIdx : Integer;
+  nMaxSize  : Integer;
+  CasTrack  : TCasTrack;
 begin
-//  if m_RawData <> nil then
-//  begin
-//    Result := Length(m_RawData.Right) div c_nBytesInSample;
-//  end
-//  else
-//    Result := 0;
+  nMaxSize := 0;
+
+  for nTrackIdx := 0 to m_lstTracks.Count - 1 do
+    if m_CasDatabase.GetTrackById(m_lstTracks[nTrackIdx], CasTrack) then
+      nMaxSize := Max(CasTrack.Position + CasTrack.Size, nMaxSize);
+
+  Result := nMaxSize;
+end;
+
+//==============================================================================
+procedure TCasPlaylist.AddTrack(a_nID: Integer);
+begin
+  m_lstTracks.Add(a_nID);
+end;
+
+//==============================================================================
+procedure TCasPlaylist.RemoveTrack(a_nID: Integer);
+begin
+  m_lstTracks.Remove(a_nID);
+end;
+
+//==============================================================================
+procedure TCasPlaylist.ClearTracks;
+begin
+  m_lstTracks.Clear;
 end;
 
 

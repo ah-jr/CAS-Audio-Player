@@ -30,7 +30,6 @@ uses
 function TCasDecoder.DecodeFile(a_strFileName : String; a_dSampleRate : Double)  : TCasTrack;
 var
   strCommand  : String;
-  dSampleRate : Double;
 const
   c_strFfmpegBin      = 'ffmpeg/ffmpeg.exe';
   c_strOutPutFileName = 'output.raw';
@@ -47,6 +46,7 @@ begin
     ExecuteAndWait(c_strFfmpegBin + ' ' + strCommand);
     Result          := CreateTrack(TFile.ReadAllBytes(c_strOutPutFileName));
     Result.Title    := a_strFileName;
+    DeleteFile(c_strOutPutFileName);
   except
     Result := nil;
   end;

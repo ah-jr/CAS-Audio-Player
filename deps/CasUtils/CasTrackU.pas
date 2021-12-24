@@ -21,13 +21,13 @@ type
     m_nPosition : Integer;
     m_dLevel    : Double;
     m_RawData   : PRawData;
-    m_nProgress : Double;
+    //m_nProgress : Double;
 
     procedure Normalize;
 
-    procedure SetPosition(a_nPosition : Integer);
+    //procedure SetPosition(a_nPosition : Integer);
 
-    function GetProgress : Double;
+    //function GetProgress : Double;
     function GetSize     : Integer;
 
 
@@ -36,11 +36,11 @@ type
 
     property ID          : Integer  read m_nID         write m_nID;
     property Title       : String   read m_strTitle    write m_strTitle;
-    property Position    : Integer  read m_nPosition   write SetPosition;
+    property Position    : Integer  read m_nPosition   write m_nPosition;//SetPosition;
 
     property RawData     : PRawData read m_RawData     write m_RawData;
     property Level       : Double   read m_dLevel      write m_dLevel;
-    property Progress    : Double   read GetProgress;
+    //property Progress    : Double   read GetProgress;
     property Size        : Integer  read GetSize;
 
   end;
@@ -58,7 +58,7 @@ begin
   m_strTitle  := '';
   m_nPosition := 0;
   m_dLevel    := 1;
-  m_nProgress := 0;
+  //m_nProgress := 0;
 end;
 
 //==============================================================================
@@ -67,17 +67,17 @@ begin
   // WIP
 end;
 
-//==============================================================================
-procedure TCasTrack.SetPosition(a_nPosition : Integer);
-begin
-  m_nPosition := Max(Min(0, a_nPosition), GetSize);
-end;
+////==============================================================================
+//procedure TCasTrack.SetPosition(a_nPosition : Integer);
+//begin
+//  m_nPosition := Max(Min(0, a_nPosition), GetSize);
+//end;
 
-//==============================================================================
-function TCasTrack.GetProgress : Double;
-begin
-  Result := m_nPosition / GetSize;
-end;
+////==============================================================================
+//function TCasTrack.GetProgress : Double;
+//begin
+//  Result := m_nPosition / GetSize;
+//end;
 
 //==============================================================================
 function TCasTrack.GetSize : Integer;

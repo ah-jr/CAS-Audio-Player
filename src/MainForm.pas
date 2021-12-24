@@ -108,6 +108,39 @@ begin
 end;
 
 //==============================================================================
+procedure TPlayerGUI.InitializeVariables;
+var
+  nDriverIdx : Integer;
+begin
+  m_CasEngine  := TCasEngine.Create(Self);
+  m_CasDecoder := TCasDecoder.Create;
+  m_CasTrack   := nil;
+
+  tbVolume.Position            := 30;
+
+  m_bFileLoaded                := False;
+  m_bBlockBufferPositionUpdate := False;
+
+  SetLength(m_DriverList, 0);
+  ListAsioDrivers(m_DriverList);
+  for nDriverIdx := Low(m_DriverList) to High(m_DriverList) do
+    cbDriver.Items.Add(String(m_DriverList[nDriverIdx].name));
+end;
+
+//==============================================================================
+procedure TPlayerGUI.ChangeEnabledObjects;
+begin
+  btnDriverControlPanel.Enabled := (m_CasEngine.Ready);
+  btnOpenFile.Enabled           := (m_CasEngine.Ready);
+  btnPlay.Enabled               := (m_CasEngine.Ready)       and
+                                   (m_CasEngine.BuffersOn)   and
+                                   (not m_CasEngine.Playing) and
+                                   (m_bFileLoaded);
+  btnPause.Enabled              := m_CasEngine.Playing;
+  btnStop.Enabled               := m_CasEngine.Playing;
+end;
+
+//==============================================================================
 procedure TPlayerGUI.cbDriverChange(Sender: TObject);
 begin
   m_CasEngine.ChangeDriver(cbDriver.ItemIndex);
@@ -130,7 +163,7 @@ begin
 
       m_CasTrack       := m_CasDecoder.DecodeFile(odOpenFile.FileName, dSampleRate);
       m_CasTrack.Level := 0.7;
-      m_CasEngine.AddTrack(m_CasTrack);
+      m_CasEngine.AddTrack(m_CasTrack, 0);
     except
       m_bFileLoaded := False;
     end;
@@ -173,39 +206,6 @@ end;
 procedure TPlayerGUI.tbProgressChange(Sender: TObject);
 begin
   UpdateBufferPosition;
-end;
-
-//==============================================================================
-procedure TPlayerGUI.InitializeVariables;
-var
-  nDriverIdx : Integer;
-begin
-  m_CasEngine  := TCasEngine.Create(Self);
-  m_CasDecoder := TCasDecoder.Create;
-  m_CasTrack   := nil;
-
-  tbVolume.Position            := 30;
-
-  m_bFileLoaded                := False;
-  m_bBlockBufferPositionUpdate := False;
-
-  SetLength(m_DriverList, 0);
-  ListAsioDrivers(m_DriverList);
-  for nDriverIdx := Low(m_DriverList) to High(m_DriverList) do
-    cbDriver.Items.Add(String(m_DriverList[nDriverIdx].name));
-end;
-
-//==============================================================================
-procedure TPlayerGUI.ChangeEnabledObjects;
-begin
-  btnDriverControlPanel.Enabled := (m_CasEngine.Ready);
-  btnOpenFile.Enabled           := (m_CasEngine.Ready);
-  btnPlay.Enabled               := (m_CasEngine.Ready)       and
-                                   (m_CasEngine.BuffersOn)   and
-                                   (not m_CasEngine.Playing) and
-                                   (m_bFileLoaded);
-  btnPause.Enabled              := m_CasEngine.Playing;
-  btnStop.Enabled               := m_CasEngine.Playing;
 end;
 
 //==============================================================================

@@ -19,6 +19,10 @@ type
     m_lstTracks : TList<Integer>;
     m_lstMixers : TList<Integer>;
 
+  public
+    constructor Create;
+    destructor  Destroy;
+
     function GetTracks   : TList<Integer>;
     function GetMixers   : TList<Integer>;
 
@@ -27,10 +31,6 @@ type
 
     procedure RemoveTrack(a_nID : Integer);
     procedure RemoveMixer(a_nID : Integer);
-
-  public
-    constructor Create;
-    destructor  Destroy;
 
     property ID          : Integer  read m_nID         write m_nID;
     property Title       : String   read m_strTitle    write m_strTitle;

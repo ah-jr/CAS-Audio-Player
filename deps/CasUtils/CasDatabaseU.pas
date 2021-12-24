@@ -29,8 +29,11 @@ type
     procedure RemoveTrack(a_nID: Integer);
     procedure RemoveMixer(a_nID: Integer);
 
-    function  GetTrackById(a_nID: Integer) : TCasTrack;
-    function  GetMixerById(a_nID: Integer) : TCasMixer;
+    function  GetTrackById(a_nID: Integer; var a_Castrack : TCasTrack) : Boolean;
+    function  GetMixerById(a_nID: Integer; var a_CasMixer : TCasMixer) : Boolean;
+
+    procedure ClearTracks;
+    procedure ClearMixers;
 
   end;
 
@@ -115,17 +118,43 @@ begin
 end;
 
 //==============================================================================
-function TCasDatabase.GetTrackById(a_nID: Integer) : TCasTrack;
+function TCasDatabase.GetTrackById(a_nID: Integer; var a_Castrack : TCasTrack) : Boolean;
 begin
-  Result := nil;
-  m_dctTracks.TryGetValue(a_nID, Result);
+  Result := m_dctTracks.TryGetValue(a_nID, a_Castrack);
 end;
 
 //==============================================================================
-function TCasDatabase.GetMixerById(a_nID: Integer) : TCasMixer;
+function TCasDatabase.GetMixerById(a_nID: Integer; var a_CasMixer : TCasMixer) : Boolean;
 begin
-  Result := nil;
-  m_dctMixers.TryGetValue(a_nID, Result);
+  Result := m_dctMixers.TryGetValue(a_nID, a_CasMixer);
+end;
+
+//==============================================================================
+procedure TCasDatabase.ClearTracks;
+var
+  CasTrack : TCasTrack;
+begin
+  for CasTrack in m_lstTracks do
+  begin
+    CasTrack.Free;
+  end;
+
+  m_dctTracks.Clear;
+  m_lstTracks.Clear;
+end;
+
+//==============================================================================
+procedure TCasDatabase.ClearMixers;
+var
+  CasMixer : TCasMixer;
+begin
+  for CasMixer in m_lstMixers do
+  begin
+    CasMixer.Free;
+  end;
+
+  m_dctMixers.Clear;
+  m_lstMixers.Clear;
 end;
 
 end.

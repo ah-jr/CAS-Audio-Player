@@ -63,7 +63,7 @@ type
     procedure SetLevel   (a_dLevel : Double);
     procedure SetPosition(a_nPosition : Integer);
 
-    procedure AddTrack(a_CasTrack : TCasTrack);
+    function  AddTrack(a_CasTrack : TCasTrack; a_nMixerId : Integer) : Boolean;
     procedure ClearTracks;
     procedure ChangeDriver(a_nID : Integer);
 
@@ -190,8 +190,10 @@ begin
 
   m_CasDatabase := TCasDatabase.Create;
   m_CasPlaylist := TCasPlaylist.Create(m_CasDatabase);
+  m_CasPlaylist.Position := 0;
 
-  m_MainMixer := TCasMixer.Create;
+  m_MainMixer       := TCasMixer.Create;
+  m_MainMixer.ID    := 0;
   m_MainMixer.Level := 1;
 
   m_CasDatabase.AddMixer(m_MainMixer);
@@ -213,24 +215,25 @@ begin
 end;
 
 //==============================================================================
-procedure TCasEngine.AddTrack(a_CasTrack : TCasTrack);
+function TCasEngine.AddTrack(a_CasTrack : TCasTrack; a_nMixerId : Integer) : Boolean;
+var
+  CasMixer : TCasMixer;
 begin
-  m_dctTracks.AddOrSetValue(a_CasTrack.ID, a_CasTrack);
-  m_lstTracks.Add(a_CasTrack);
+  Result := False;
+
+  if m_CasDatabase.GetMixerById(a_nMixerId, CasMixer) then
+    begin
+      CasMixer.AddTrack(a_CasTrack.ID);
+      m_CasDatabase.AddTrack(a_CasTrack);
+
+      Result := True;
+    end;
 end;
 
 //==============================================================================
 procedure TCasEngine.ClearTracks;
-var
-  CasTrack : TCasTrack;
 begin
-  for CasTrack in m_lstTracks do
-  begin
-    CasTrack.Free;
-  end;
-
-  m_dctTracks.Clear;
-  m_lstTracks.Clear;
+  m_CasDatabase.ClearTracks;
 end;
 
 //==============================================================================
@@ -301,12 +304,12 @@ var
    nLeftChannelBufferIndex  : Integer;
    nRightChannelBufferIndex : Integer;
 begin
-  if (m_MainTrack.Position < m_MainTrack.Size - m_nCurrentBufferSize) then
+  if (m_CasPlaylist.Position < m_CasPlaylist.Length - m_nCurrentBufferSize) then
   begin
     Info := m_BufferInfo;
 
-    nLeftChannelBufferIndex  := m_MainTrack.Position;
-    nRightChannelBufferIndex := m_MainTrack.Position;
+    nLeftChannelBufferIndex  := m_CasPlaylist.Position;
+    nRightChannelBufferIndex := m_CasPlaylist.Position;
 
     for nChannelIdx := 0 to c_nChannelCount - 1 do
     begin
@@ -331,13 +334,13 @@ begin
             begin
               if nChannelIdx = 0 then
                 begin
-                  OutputInt32^ := Trunc(Power(2, 32 - c_nBitDepth) * m_MainTrack.RawData.Left[nLeftChannelBufferIndex] * m_MainTrack.Level);
-                  Inc(nLeftChannelBufferIndex);
+                  //OutputInt32^ := Trunc(Power(2, 32 - c_nBitDepth) * m_MainTrack.RawData.Left[nLeftChannelBufferIndex] * m_MainTrack.Level);
+                  //Inc(nLeftChannelBufferIndex);
                 end
               else
                 begin
-                  OutputInt32^ := Trunc(Power(2, 32 - c_nBitDepth) * m_MainTrack.RawData.Right[nRightChannelBufferIndex] * m_MainTrack.Level);
-                  Inc(nRightChannelBufferIndex);
+                  //OutputInt32^ := Trunc(Power(2, 32 - c_nBitDepth) * m_MainTrack.RawData.Right[nRightChannelBufferIndex] * m_MainTrack.Level);
+                  //Inc(nRightChannelBufferIndex);
                 end;
 
               inc(OutputInt32);
@@ -354,14 +357,14 @@ begin
       Inc(Info);
     end;
 
-    m_MainTrack.Position := nLeftChannelBufferIndex;
+    m_CasPlaylist.Position := nLeftChannelBufferIndex;
 
     PostMessage(Handle, CM_UpdateSamplePos, Params.TimeInfo.SamplePosition.Hi, Params.TimeInfo.SamplePosition.Lo);
     m_AsioDriver.OutputReady;
   end
   else
   begin
-    m_MainTrack.Position := 0;
+    m_CasPlaylist.Position := 0;
   end;
 
   //UpdateProgressBar;
@@ -483,7 +486,7 @@ begin
   if m_AsioDriver <> nil then
   begin
     Pause;
-    m_MainTrack.Position := 0;
+    m_CasPlaylist.Position := 0;
 //    UpdateProgressBar;
 //    ChangeEnabledObjects;
   end;
@@ -492,25 +495,25 @@ end;
 //==============================================================================
 function TCasEngine.GetLevel : Double;
 begin
-  Result := m_MainTrack.Level;
+  Result := m_MainMixer.Level;
 end;
 
 //==============================================================================
 function TCasEngine.GetPosition : Integer;
 begin
-  Result := m_MainTrack.Position;
+  Result := m_CasPlaylist.Position;
 end;
 
 //==============================================================================
 function TCasEngine.GetProgress : Double;
 begin
-  Result := m_MainTrack.Progress;
+  Result := m_CasPlaylist.Progress;
 end;
 
 //==============================================================================
 function TCasEngine.GetLength : Integer;
 begin
-  Result := m_MainTrack.Size;
+  Result := m_CasPlaylist.Length;
 end;
 
 //==============================================================================
@@ -535,13 +538,13 @@ end;
 //==============================================================================
 procedure TCasEngine.SetLevel(a_dLevel : Double);
 begin
-  m_MainTrack.Level := a_dLevel;
+  m_MainMixer.Level := a_dLevel;
 end;
 
 //==============================================================================
 procedure TCasEngine.SetPosition(a_nPosition : Integer);
 begin
-  m_MainTrack.Position := a_nPosition;
+  m_CasPlaylist.Position := a_nPosition;
 end;
 
 //==============================================================================
