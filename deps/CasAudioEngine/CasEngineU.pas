@@ -32,6 +32,9 @@ type
     m_bBuffersCreated            : Boolean;
     m_bIsStarted                 : Boolean;
 
+    m_RightBuffer                : Array of Integer;
+    m_LeftBuffer                 : Array of Integer;
+
     m_AsioDriver                 : IOpenAsio;
     m_DriverList                 : TAsioDriverList;
     m_Callbacks                  : TASIOCallbacks;
@@ -42,6 +45,7 @@ type
     procedure ProcessMessage(var MsgRec: TMessage);
     procedure InitializeVariables;
     procedure CloseDriver;
+    procedure CalculateBuffers;
     procedure CreateBuffers;
     procedure DestroyBuffers;
 
@@ -62,6 +66,8 @@ type
 
     procedure SetLevel   (a_dLevel : Double);
     procedure SetPosition(a_nPosition : Integer);
+
+    function AddTrackToPlaylist(a_nTrackId, a_nPosition : Integer) : Boolean;
 
     function  AddTrack(a_CasTrack : TCasTrack; a_nMixerId : Integer) : Boolean;
     procedure ClearTracks;
@@ -215,6 +221,20 @@ begin
 end;
 
 //==============================================================================
+function TCasEngine.AddTrackToPlaylist(a_nTrackId, a_nPosition : Integer) : Boolean;
+var
+  CasTrack : TCasTrack;
+begin
+  Result := m_CasDatabase.GetTrackById(a_nTrackId, CasTrack);
+
+  if Result then
+  begin
+    CasTrack.Position := a_nPosition;
+    m_CasPlaylist.AddTrack(a_nTrackId);
+  end;
+end;
+
+//==============================================================================
 function TCasEngine.AddTrack(a_CasTrack : TCasTrack; a_nMixerId : Integer) : Boolean;
 var
   CasMixer : TCasMixer;
@@ -301,15 +321,17 @@ var
    nBufferIdx               : Integer;
    Info                     : PAsioBufferInfo;
    OutputInt32              : PInteger;
-   nLeftChannelBufferIndex  : Integer;
-   nRightChannelBufferIndex : Integer;
+//   nLeftChannelBufferIndex  : Integer;
+//   nRightChannelBufferIndex : Integer;
 begin
   if (m_CasPlaylist.Position < m_CasPlaylist.Length - m_nCurrentBufferSize) then
   begin
     Info := m_BufferInfo;
 
-    nLeftChannelBufferIndex  := m_CasPlaylist.Position;
-    nRightChannelBufferIndex := m_CasPlaylist.Position;
+    CalculateBuffers;
+
+    //nLeftChannelBufferIndex  := m_CasPlaylist.Position;
+    //nRightChannelBufferIndex := m_CasPlaylist.Position;
 
     for nChannelIdx := 0 to c_nChannelCount - 1 do
     begin
@@ -333,17 +355,19 @@ begin
             for nBufferIdx := 0 to m_nCurrentBufferSize-1 do
             begin
               if nChannelIdx = 0 then
-                begin
-                  //OutputInt32^ := Trunc(Power(2, 32 - c_nBitDepth) * m_MainTrack.RawData.Left[nLeftChannelBufferIndex] * m_MainTrack.Level);
-                  //Inc(nLeftChannelBufferIndex);
-                end
+              begin
+                OutputInt32^ := Trunc(Power(2, 32 - c_nBitDepth) * m_LeftBuffer[nBufferIdx]);
+                //OutputInt32^ := Trunc(Power(2, 32 - c_nBitDepth) * m_MainTrack.RawData.Left[nLeftChannelBufferIndex] * m_MainTrack.Level);
+                //Inc(nLeftChannelBufferIndex);
+              end
               else
-                begin
-                  //OutputInt32^ := Trunc(Power(2, 32 - c_nBitDepth) * m_MainTrack.RawData.Right[nRightChannelBufferIndex] * m_MainTrack.Level);
-                  //Inc(nRightChannelBufferIndex);
-                end;
+              begin
+                OutputInt32^ := Trunc(Power(2, 32 - c_nBitDepth) * m_RightBuffer[nBufferIdx]);
+                //OutputInt32^ := Trunc(Power(2, 32 - c_nBitDepth) * m_MainTrack.RawData.Right[nRightChannelBufferIndex] * m_MainTrack.Level);
+                //Inc(nRightChannelBufferIndex);
+              end;
 
-              inc(OutputInt32);
+              Inc(OutputInt32);
             end;
           end;
         ASIOSTFloat32LSB : ;
@@ -357,7 +381,7 @@ begin
       Inc(Info);
     end;
 
-    m_CasPlaylist.Position := nLeftChannelBufferIndex;
+    m_CasPlaylist.Position := m_CasPlaylist.Position + m_nCurrentBufferSize;
 
     PostMessage(Handle, CM_UpdateSamplePos, Params.TimeInfo.SamplePosition.Hi, Params.TimeInfo.SamplePosition.Lo);
     m_AsioDriver.OutputReady;
@@ -369,6 +393,51 @@ begin
 
   //UpdateProgressBar;
   //ChangeEnabledObjects
+end;
+
+//==============================================================================
+procedure TCasEngine.CalculateBuffers;
+var
+  nBufferIdx  : Integer;
+  nPosition   : Integer;
+  nTrackIdx   : Integer;
+  CasTrack    : TCasTrack;
+  CasMixer    : TCasMixer;
+begin
+  nPosition := m_CasPlaylist.Position;
+
+  SetLength(m_LeftBuffer,  m_nCurrentBufferSize);
+  SetLength(m_RightBuffer, m_nCurrentBufferSize);
+
+  // Clear buffers:
+  for nBufferIdx := 0 to m_nCurrentBufferSize-1 do
+  begin
+    m_LeftBuffer [nBufferIdx] := 0;
+    m_RightBuffer[nBufferIdx] := 0;
+  end;
+
+  // For each mixer, get all linked tracks and add them to the buffer:
+  for CasMixer in m_CasDatabase.Mixers do
+  begin
+    for nTrackIdx in CasMixer.Tracks do
+    begin
+      if m_CasDatabase.GetTrackById(nTrackIdx, CasTrack) then
+      begin
+        // If track's position is positive, it's in the playlist:
+        if CasTrack.Position >= 0 then
+        begin
+          for nBufferIdx := 0 to m_nCurrentBufferSize-1 do
+          begin
+            m_LeftBuffer [nBufferIdx] := m_LeftBuffer[nBufferIdx]  +
+              CasTrack.RawData.Left [nPosition + CasTrack.Position + nBufferIdx];
+
+            m_RightBuffer[nBufferIdx] := m_RightBuffer[nBufferIdx] +
+              CasTrack.RawData.Right[nPosition + CasTrack.Position + nBufferIdx];
+          end;
+        end;
+      end;
+    end;
+  end;
 end;
 
 //==============================================================================

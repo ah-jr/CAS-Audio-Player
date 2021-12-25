@@ -21,7 +21,7 @@ type
 
   public
     constructor Create;
-    destructor  Destroy;
+    destructor  Destroy; override;
 
     procedure AddTrack(a_CasTrack : TCasTrack);
     procedure AddMixer(a_CasMixer : TCasMixer);
@@ -34,6 +34,9 @@ type
 
     procedure ClearTracks;
     procedure ClearMixers;
+
+    property Mixers : TList<TCasMixer> read m_lstMixers write m_lstMixers;
+    property Tracks : TList<TCasTrack> read m_lstTracks write m_lstTracks;
 
   end;
 
@@ -71,6 +74,8 @@ begin
 
   m_dctTracks.Free;
   m_dctMixers.Free;
+
+  Inherited;
 end;
 
 //==============================================================================

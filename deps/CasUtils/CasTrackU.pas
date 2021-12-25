@@ -56,7 +56,7 @@ constructor TCasTrack.Create;
 begin
   m_nID       := 0;
   m_strTitle  := '';
-  m_nPosition := 0;
+  m_nPosition := -1;
   m_dLevel    := 1;
   //m_nProgress := 0;
 end;
@@ -84,7 +84,7 @@ function TCasTrack.GetSize : Integer;
 begin
   if m_RawData <> nil then
   begin
-    Result := Length(m_RawData.Right) div c_nBytesInSample;
+    Result := Length(m_RawData.Right);// div c_nBytesInSample;
   end
   else
     Result := 0;

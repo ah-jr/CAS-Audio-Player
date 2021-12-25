@@ -13,7 +13,6 @@ type
 
   private
     m_nPosition : Integer;
-    m_nProgress : Double;
     m_lstTracks : TList<Integer>;
 
     m_CasDatabase : TCasDatabase;
@@ -25,7 +24,7 @@ type
 
   public
     constructor Create(a_CasDatabase: TCasDatabase);
-    destructor  Destroy;
+    destructor  Destroy; override;
 
     procedure AddTrack   (a_nID: Integer);
     procedure RemoveTrack(a_nID: Integer);
@@ -47,21 +46,23 @@ uses
 //==============================================================================
 constructor TCasPlaylist.Create(a_CasDatabase: TCasDatabase);
 begin
+  m_nPosition   := 0;
   m_CasDatabase := a_CasDatabase;
-
-  m_lstTracks := TList<Integer>.Create;
+  m_lstTracks   := TList<Integer>.Create;
 end;
 
 //==============================================================================
 destructor TCasPlaylist.Destroy;
 begin
   m_lstTracks.Free;
+
+  Inherited;
 end;
 
 //==============================================================================
 procedure TCasPlaylist.SetPosition(a_nPosition : Integer);
 begin
-  m_nPosition := Max(Min(0, a_nPosition), GetLength);
+  m_nPosition := Min(Max(0, a_nPosition), GetLength);
 end;
 
 //==============================================================================

@@ -21,7 +21,7 @@ type
 
   public
     constructor Create;
-    destructor  Destroy;
+    destructor  Destroy; override;
 
     function GetTracks   : TList<Integer>;
     function GetMixers   : TList<Integer>;
@@ -32,10 +32,13 @@ type
     procedure RemoveTrack(a_nID : Integer);
     procedure RemoveMixer(a_nID : Integer);
 
-    property ID          : Integer  read m_nID         write m_nID;
-    property Title       : String   read m_strTitle    write m_strTitle;
-    property Level       : Double   read m_dLevel      write m_dLevel;
-    property Pan         : Double   read m_dPan        write m_dPan;
+    property ID     : Integer        read m_nID       write m_nID;
+    property Title  : String         read m_strTitle  write m_strTitle;
+    property Level  : Double         read m_dLevel    write m_dLevel;
+    property Pan    : Double         read m_dPan      write m_dPan;
+
+    property Mixers : TList<Integer> read m_lstMixers write m_lstMixers;
+    property Tracks : TList<Integer> read m_lstTracks write m_lstTracks;
 
   end;
 
@@ -61,6 +64,8 @@ destructor TCasMixer.Destroy;
 begin
   m_lstTracks.Free;
   m_lstMixers.Free;
+
+  Inherited;
 end;
 
 //==============================================================================

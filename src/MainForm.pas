@@ -164,6 +164,7 @@ begin
       m_CasTrack       := m_CasDecoder.DecodeFile(odOpenFile.FileName, dSampleRate);
       m_CasTrack.Level := 0.7;
       m_CasEngine.AddTrack(m_CasTrack, 0);
+      m_CasEngine.AddTrackToPlaylist(m_CasTrack.ID, 0);
     except
       m_bFileLoaded := False;
     end;
