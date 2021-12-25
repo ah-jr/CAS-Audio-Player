@@ -45,7 +45,7 @@ begin
     DeleteFile(c_strOutPutFileName);
     ExecuteAndWait(c_strFfmpegBin + ' ' + strCommand);
     Result          := CreateTrack(TFile.ReadAllBytes(c_strOutPutFileName));
-    Result.Title    := a_strFileName;
+    Result.Title    := TPath.GetFileNameWithoutExtension(a_strFileName);
     DeleteFile(c_strOutPutFileName);
   except
     Result := nil;

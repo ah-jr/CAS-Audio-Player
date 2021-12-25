@@ -91,7 +91,8 @@ type
     property BuffersOn  : Boolean   read m_bBuffersCreated;
     property SampleRate : Double    read GetSampleRate;
 
-    property AsioDriver : IOpenAsio read m_AsioDriver write m_AsioDriver;
+    property Database   : TCasDatabase read m_CasDatabase write m_CasDatabase;
+    property AsioDriver : IOpenAsio    read m_AsioDriver  write m_AsioDriver;
 
     property BufferTime : TAsioTime read m_BufferTime write m_BufferTime;
     property Handle     : HWND      read m_hwndHandle write m_hwndHandle;
@@ -427,16 +428,21 @@ begin
     begin
       if m_CasDatabase.GetTrackById(nTrackIdx, CasTrack) then
       begin
-        // If track's position is positive, it's in the playlist:
-        if CasTrack.Position >= 0 then
+        // If track's position is positive, it's in the playlist.
+        if (CasTrack.Position >= 0) then
         begin
-          for nBufferIdx := 0 to m_nCurrentBufferSize - 1 do
+          // If playlist reached track's position, plays:
+          if (CasTrack.Position <= nPosition) and
+             ((nPosition - CasTrack.Position) < (CasTrack.Size - m_nCurrentBufferSize)) then
           begin
-            m_LeftBuffer [nBufferIdx] := m_LeftBuffer[nBufferIdx]  +
-              Trunc(CasMixer.Level * CasTrack.RawData.Left [nPosition + CasTrack.Position + nBufferIdx]);
+            for nBufferIdx := 0 to m_nCurrentBufferSize - 1 do
+            begin
+              m_LeftBuffer [nBufferIdx] := m_LeftBuffer[nBufferIdx]  +
+                Trunc(CasMixer.Level * CasTrack.RawData.Left [nPosition - CasTrack.Position + nBufferIdx]);
 
-            m_RightBuffer[nBufferIdx] := m_RightBuffer[nBufferIdx] +
-              Trunc(CasMixer.Level * CasTrack.RawData.Right[nPosition + CasTrack.Position + nBufferIdx]);
+              m_RightBuffer[nBufferIdx] := m_RightBuffer[nBufferIdx] +
+                Trunc(CasMixer.Level * CasTrack.RawData.Right[nPosition - CasTrack.Position + nBufferIdx]);
+            end;
           end;
         end;
       end;

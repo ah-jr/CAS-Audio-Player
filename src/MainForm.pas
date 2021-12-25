@@ -38,35 +38,39 @@ uses
   CasEngineU,
   CasDecoderU,
   CasTrackU,
-  CasConstantsU;
+  CasConstantsU, Vcl.ExtCtrls;
 
 type
   TPlayerGUI = class(TForm)
-    btnOpenFile: TButton;
-    btnPlay: TButton;
-    btnStop: TButton;
-    btnPause: TButton;
-    odOpenFile: TOpenDialog;
-    tbVolume: TTrackBar;
-    tbProgress: TTrackBar;
-    cbDriver: TComboBox;
-    btnDriverControlPanel: TButton;
-    ilMediaButtons: TImageList;
+    btnOpenFile           : TButton;
+    btnPlay               : TButton;
+    btnStop               : TButton;
+    btnPause              : TButton;
+    odOpenFile            : TOpenDialog;
+    tbVolume              : TTrackBar;
+    tbProgress            : TTrackBar;
+    cbDriver              : TComboBox;
+    btnDriverControlPanel : TButton;
+    ilMediaButtons        : TImageList;
+    sbTrackList           : TScrollBox;
 
-    procedure FormCreate(Sender: TObject);
-    procedure FormDestroy(Sender: TObject);
-    procedure cbDriverChange(Sender: TObject);
-    procedure btnDriverControlPanelClick(Sender: TObject);
-    procedure btnPlayClick(Sender: TObject);
-    procedure btnPauseClick(Sender: TObject);
-    procedure btnStopClick(Sender: TObject);
-    procedure btnOpenFileClick(Sender: TObject);
-    procedure tbVolumeChange(Sender: TObject);
-    procedure tbProgressChange(Sender: TObject);
+    procedure FormCreate                 (Sender: TObject);
+    procedure FormDestroy                (Sender: TObject);
+    procedure cbDriverChange             (Sender: TObject);
+    procedure btnDriverControlPanelClick (Sender: TObject);
+    procedure btnPauseClick              (Sender: TObject);
+    procedure btnStopClick               (Sender: TObject);
+    procedure btnPlayClick               (Sender: TObject);
+    procedure btnJumpClick               (Sender: TObject);
+    procedure btnOpenFileClick           (Sender: TObject);
+    procedure tbVolumeChange             (Sender: TObject);
+    procedure tbProgressChange           (Sender: TObject);
 
   private
     m_bBlockBufferPositionUpdate : Boolean;
     m_bFileLoaded                : Boolean;
+
+    m_nLoadedTrackCount          : Integer;
 
     m_CasEngine                  : TCasEngine;
     m_CasDecoder                 : TCasDecoder;
@@ -76,12 +80,14 @@ type
 
     procedure EngineNotification(var MsgRec: TMessage); message CM_NotifyOwner;
 
+    procedure AddTrackInfo(a_strTitle : String; a_nTrackId : Integer);
+
     procedure InitializeVariables;
     procedure ChangeEnabledObjects;
     procedure UpdateBufferPosition;
     procedure UpdateProgressBar;
 
-  end;
+end;
 
 var
   PlayerGUI: TPlayerGUI;
@@ -120,6 +126,7 @@ begin
   m_CasTrack   := nil;
 
   tbVolume.Position            := 30;
+  m_nLoadedTrackCount          := 0;
 
   m_bFileLoaded                := False;
   m_bBlockBufferPositionUpdate := False;
@@ -179,13 +186,15 @@ begin
     m_bFileLoaded := True;
 
     try
-      m_CasEngine.ClearTracks;
       dSampleRate := m_CasEngine.SampleRate;
 
       m_CasTrack       := m_CasDecoder.DecodeFile(odOpenFile.FileName, dSampleRate);
       m_CasTrack.Level := 0.7;
+      m_CasTrack.ID    := m_nLoadedTrackCount;
       m_CasEngine.AddTrack(m_CasTrack, 0);
-      m_CasEngine.AddTrackToPlaylist(m_CasTrack.ID, 0);
+      m_CasEngine.AddTrackToPlaylist(m_CasTrack.ID, m_CasEngine.Length);
+
+      AddTrackInfo(m_CasTrack.Title, m_CasTrack.ID);
     except
       m_bFileLoaded := False;
     end;
@@ -252,6 +261,45 @@ begin
   m_bBlockBufferPositionUpdate := True;
   tbProgress.Position          := Trunc(m_CasEngine.Progress*tbProgress.Max);
   m_bBlockBufferPositionUpdate := False;
+end;
+
+//==============================================================================
+procedure TPlayerGUI.AddTrackInfo(a_strTitle : String; a_nTrackId : Integer);
+var
+  lblTitle : TLabel;
+  btnPlay  : TButton;
+begin
+  lblTitle           := TLabel.Create(sbTrackList);
+  lblTitle.Parent    := sbTrackList;
+  lblTitle.Align     := alNone;
+  lblTitle.Font.Size := 10;
+  lblTitle.Caption   := IntToStr(m_nLoadedTrackCount + 1) + ') ' + a_strTitle;
+  lblTitle.Top       := m_nLoadedTrackCount*25 + 3;
+  lblTitle.Left      := 2;
+  lblTitle.Width     := sbTrackList.Width - 75;
+  lblTitle.Height    := 20;
+
+  btnPlay            := TButton.Create(sbTrackList);
+  btnPlay.Parent     := sbTrackList;
+  btnPlay.Align      := alNone;
+  btnPlay.Caption    := 'Jump';
+  btnPlay.Name       := 'btn' + IntToStr(a_nTrackId);
+  btnPlay.OnClick    := btnJumpClick;
+  btnPlay.Width      := 40;
+  btnPlay.Height     := 20;
+  btnPlay.Left       := sbTrackList.Width - btnPlay.Width - 25;
+  btnPlay.Top        := m_nLoadedTrackCount*25 + 3;
+
+  Inc(m_nLoadedTrackCount);
+end;
+
+//==============================================================================
+procedure TPlayerGUI.btnJumpClick(Sender : TObject);
+var
+  CasTrack : TCasTrack;
+begin
+  if m_CasEngine.Database.GetTrackByID(StrToInt(String((Sender as TButton).Name).SubString(3)), CasTrack) then
+    m_CasEngine.Position := CasTrack.Position;
 end;
 
 end.

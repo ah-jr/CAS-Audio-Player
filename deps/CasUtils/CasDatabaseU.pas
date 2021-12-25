@@ -32,6 +32,8 @@ type
     function  GetTrackById(a_nID: Integer; var a_Castrack : TCasTrack) : Boolean;
     function  GetMixerById(a_nID: Integer; var a_CasMixer : TCasMixer) : Boolean;
 
+    function  GetTrackByTitle(a_strTitle : String; var a_Castrack : TCasTrack) : Boolean;
+
     procedure ClearTracks;
     procedure ClearMixers;
 
@@ -126,6 +128,24 @@ end;
 function TCasDatabase.GetTrackById(a_nID: Integer; var a_Castrack : TCasTrack) : Boolean;
 begin
   Result := m_dctTracks.TryGetValue(a_nID, a_Castrack);
+end;
+
+//==============================================================================
+function TCasDatabase.GetTrackByTitle(a_strTitle : String; var a_Castrack : TCasTrack) : Boolean;
+var
+  CasTrack : TCasTrack;
+begin
+  Result := False;
+
+  for CasTrack in m_lstTracks do
+  begin
+    if CasTrack.Title = a_strTitle then
+    begin
+      Result := True;
+      a_Castrack := CasTrack;
+      Break;
+    end;
+  end;
 end;
 
 //==============================================================================

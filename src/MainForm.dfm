@@ -2,7 +2,7 @@ object PlayerGUI: TPlayerGUI
   Left = 0
   Top = 0
   Caption = 'TPlayerGUI'
-  ClientHeight = 101
+  ClientHeight = 325
   ClientWidth = 433
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -93,6 +93,13 @@ object PlayerGUI: TPlayerGUI
     Caption = 'Asio Control Panel'
     TabOrder = 7
     OnClick = btnDriverControlPanelClick
+  end
+  object sbTrackList: TScrollBox
+    Left = 8
+    Top = 103
+    Width = 417
+    Height = 214
+    TabOrder = 8
   end
   object odOpenFile: TOpenDialog
     Left = 160
