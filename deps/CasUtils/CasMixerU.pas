@@ -32,6 +32,9 @@ type
     procedure RemoveTrack(a_nID : Integer);
     procedure RemoveMixer(a_nID : Integer);
 
+    procedure ClearTracks;
+    procedure ClearMixers;
+
     property ID     : Integer        read m_nID       write m_nID;
     property Title  : String         read m_strTitle  write m_strTitle;
     property Level  : Double         read m_dLevel    write m_dLevel;
@@ -102,6 +105,18 @@ end;
 procedure TCasMixer.RemoveMixer(a_nID : Integer);
 begin
   m_lstMixers.Remove(a_nID);
+end;
+
+//==============================================================================
+procedure TCasMixer.ClearTracks;
+begin
+  m_lstTracks.Clear;
+end;
+
+//==============================================================================
+procedure TCasMixer.ClearMixers;
+begin
+  m_lstMixers.Clear;
 end;
 
 end.

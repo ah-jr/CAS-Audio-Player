@@ -37,7 +37,8 @@ uses
   AudioManagerU,
   CasEngineU,
   CasDecoderU,
-  CasTrackU;
+  CasTrackU,
+  CasConstantsU;
 
 type
   TPlayerGUI = class(TForm)
@@ -72,6 +73,8 @@ type
     m_CasTrack                   : TCasTrack;
 
     m_DriverList                 : TAsioDriverList;
+
+    procedure EngineNotification(var MsgRec: TMessage); message CM_NotifyOwner;
 
     procedure InitializeVariables;
     procedure ChangeEnabledObjects;
@@ -112,7 +115,7 @@ procedure TPlayerGUI.InitializeVariables;
 var
   nDriverIdx : Integer;
 begin
-  m_CasEngine  := TCasEngine.Create(Self);
+  m_CasEngine  := TCasEngine.Create(Self, Handle);
   m_CasDecoder := TCasDecoder.Create;
   m_CasTrack   := nil;
 
@@ -125,6 +128,24 @@ begin
   ListAsioDrivers(m_DriverList);
   for nDriverIdx := Low(m_DriverList) to High(m_DriverList) do
     cbDriver.Items.Add(String(m_DriverList[nDriverIdx].name));
+end;
+
+//==============================================================================
+procedure TPlayerGUI.EngineNotification(var MsgRec: TMessage);
+begin
+  case TNotificationType(MsgRec.Wparam) of
+    ntBuffersDestroyed,
+    ntBuffersCreated,
+    ntDriverClosed     : ChangeEnabledObjects;
+
+    ntRequestedReset   : cbDriverChange(cbDriver);
+
+    ntBuffersUpdated   :
+      begin
+        UpdateProgressBar;
+        ChangeEnabledObjects;
+      end;
+  end;
 end;
 
 //==============================================================================
@@ -184,18 +205,22 @@ end;
 procedure TPlayerGUI.btnPlayClick(Sender: TObject);
 begin
   m_CasEngine.Play;
+  ChangeEnabledObjects;
 end;
 
 //==============================================================================
 procedure TPlayerGUI.btnPauseClick(Sender: TObject);
 begin
   m_CasEngine.Pause;
+  ChangeEnabledObjects;
 end;
 
 //==============================================================================
 procedure TPlayerGUI.btnStopClick(Sender: TObject);
 begin
   m_CasEngine.Stop;
+  UpdateProgressBar;
+  ChangeEnabledObjects;
 end;
 
 //==============================================================================

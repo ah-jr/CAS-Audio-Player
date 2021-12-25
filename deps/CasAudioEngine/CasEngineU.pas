@@ -20,6 +20,7 @@ type
 
   private
     m_hwndHandle                 : HWND;
+    m_hwndOwner                  : HWND;
     m_Owner                      : TObject;
     m_MainMixer                  : TCasMixer;
 
@@ -50,8 +51,10 @@ type
     procedure DestroyBuffers;
 
   public
-    constructor Create(a_Owner : TObject);
+    constructor Create(a_Owner : TObject; a_Handle : HWND = 0);
     destructor  Destroy; override;
+
+    procedure NotifyOwner(a_ntNotification : TNotificationType);
 
     procedure Play;
     procedure Pause;
@@ -67,7 +70,7 @@ type
     procedure SetLevel   (a_dLevel : Double);
     procedure SetPosition(a_nPosition : Integer);
 
-    function AddTrackToPlaylist(a_nTrackId, a_nPosition : Integer) : Boolean;
+    function  AddTrackToPlaylist(a_nTrackId, a_nPosition : Integer) : Boolean;
 
     function  AddTrack(a_CasTrack : TCasTrack; a_nMixerId : Integer) : Boolean;
     procedure ClearTracks;
@@ -174,10 +177,11 @@ begin
 end;
 
 //==============================================================================
-constructor TCasEngine.Create(a_Owner : TObject);
+constructor TCasEngine.Create(a_Owner : TObject; a_Handle : HWND = 0);
 begin
-  m_Owner   := a_Owner;
-  CasEngine := Self;
+  m_Owner     := a_Owner;
+  m_hwndOwner := a_Handle;
+  CasEngine   := Self;
 
   InitializeVariables;
 end;
@@ -221,6 +225,15 @@ begin
 end;
 
 //==============================================================================
+procedure TCasEngine.NotifyOwner(a_ntNotification : TNotificationType);
+begin
+  if m_hwndOwner <> 0 then
+  begin
+    PostMessage(m_hwndOwner, CM_NotifyOwner, WParam(a_ntNotification), LParam(0));
+  end;
+end;
+
+//==============================================================================
 function TCasEngine.AddTrackToPlaylist(a_nTrackId, a_nPosition : Integer) : Boolean;
 var
   CasTrack : TCasTrack;
@@ -242,12 +255,13 @@ begin
   Result := False;
 
   if m_CasDatabase.GetMixerById(a_nMixerId, CasMixer) then
-    begin
+  begin
+    if CasMixer.Tracks.IndexOf(a_CasTrack.ID) < 0 then
       CasMixer.AddTrack(a_CasTrack.ID);
-      m_CasDatabase.AddTrack(a_CasTrack);
 
-      Result := True;
-    end;
+    m_CasDatabase.AddTrack(a_CasTrack);
+    Result := True;
+  end;
 end;
 
 //==============================================================================
@@ -292,7 +306,7 @@ var
    inp, outp: integer;
 begin
   case Message.WParam of
-//    AM_ResetRequest         :  cbDriverChange(cbDriver);
+    AM_ResetRequest         :  NotifyOwner(ntRequestedReset);
     AM_BufferSwitch         :  BufferSwitch(Message.LParam);
     AM_BufferSwitchTimeInfo :  BufferSwitchTimeInfo(Message.LParam, m_BufferTime);
     AM_LatencyChanged       :
@@ -321,17 +335,12 @@ var
    nBufferIdx               : Integer;
    Info                     : PAsioBufferInfo;
    OutputInt32              : PInteger;
-//   nLeftChannelBufferIndex  : Integer;
-//   nRightChannelBufferIndex : Integer;
 begin
   if (m_CasPlaylist.Position < m_CasPlaylist.Length - m_nCurrentBufferSize) then
   begin
     Info := m_BufferInfo;
 
     CalculateBuffers;
-
-    //nLeftChannelBufferIndex  := m_CasPlaylist.Position;
-    //nRightChannelBufferIndex := m_CasPlaylist.Position;
 
     for nChannelIdx := 0 to c_nChannelCount - 1 do
     begin
@@ -357,14 +366,10 @@ begin
               if nChannelIdx = 0 then
               begin
                 OutputInt32^ := Trunc(Power(2, 32 - c_nBitDepth) * m_LeftBuffer[nBufferIdx]);
-                //OutputInt32^ := Trunc(Power(2, 32 - c_nBitDepth) * m_MainTrack.RawData.Left[nLeftChannelBufferIndex] * m_MainTrack.Level);
-                //Inc(nLeftChannelBufferIndex);
               end
               else
               begin
                 OutputInt32^ := Trunc(Power(2, 32 - c_nBitDepth) * m_RightBuffer[nBufferIdx]);
-                //OutputInt32^ := Trunc(Power(2, 32 - c_nBitDepth) * m_MainTrack.RawData.Right[nRightChannelBufferIndex] * m_MainTrack.Level);
-                //Inc(nRightChannelBufferIndex);
               end;
 
               Inc(OutputInt32);
@@ -391,8 +396,7 @@ begin
     m_CasPlaylist.Position := 0;
   end;
 
-  //UpdateProgressBar;
-  //ChangeEnabledObjects
+  NotifyOwner(ntBuffersUpdated);
 end;
 
 //==============================================================================
@@ -426,13 +430,13 @@ begin
         // If track's position is positive, it's in the playlist:
         if CasTrack.Position >= 0 then
         begin
-          for nBufferIdx := 0 to m_nCurrentBufferSize-1 do
+          for nBufferIdx := 0 to m_nCurrentBufferSize - 1 do
           begin
             m_LeftBuffer [nBufferIdx] := m_LeftBuffer[nBufferIdx]  +
-              CasTrack.RawData.Left [nPosition + CasTrack.Position + nBufferIdx];
+              Trunc(CasMixer.Level * CasTrack.RawData.Left [nPosition + CasTrack.Position + nBufferIdx]);
 
             m_RightBuffer[nBufferIdx] := m_RightBuffer[nBufferIdx] +
-              CasTrack.RawData.Right[nPosition + CasTrack.Position + nBufferIdx];
+              Trunc(CasMixer.Level * CasTrack.RawData.Right[nPosition + CasTrack.Position + nBufferIdx]);
           end;
         end;
       end;
@@ -474,7 +478,7 @@ begin
     else
       m_nCurrentBufferSize := 0;
 
-//    ChangeEnabledObjects;
+    NotifyOwner(ntBuffersCreated);
 
     if m_AsioDriver <> nil then
     begin
@@ -503,7 +507,7 @@ begin
     m_bBuffersCreated    := False;
     m_nCurrentBufferSize := 0;
 
-//    ChangeEnabledObjects;
+    NotifyOwner(ntBuffersDestroyed);
   end;
 end;
 
@@ -521,17 +525,14 @@ begin
     m_AsioDriver := nil;
   end;
 
-//  ChangeEnabledObjects;
+  NotifyOwner(ntDriverClosed);
 end;
 
 //==============================================================================
 procedure TCasEngine.Play;
 begin
   if m_AsioDriver <> nil then
-  begin
     m_bIsStarted := (m_AsioDriver.Start = ASE_OK);
-//    ChangeEnabledObjects;
-  end;
 end;
 
 //==============================================================================
@@ -544,8 +545,6 @@ begin
       m_AsioDriver.Stop;
       m_bIsStarted := False;
     end;
-
-//    ChangeEnabledObjects;
   end;
 end;
 
@@ -556,8 +555,6 @@ begin
   begin
     Pause;
     m_CasPlaylist.Position := 0;
-//    UpdateProgressBar;
-//    ChangeEnabledObjects;
   end;
 end;
 
