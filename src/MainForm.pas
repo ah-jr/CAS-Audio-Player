@@ -277,6 +277,7 @@ begin
     2:  dSpeed := 2;
     1:  dSpeed := 3;
     0:  dSpeed := 5;
+  else  dSpeed := 1;
   end;
 
   tbSpeed.Hint := 'Speed: ' + FloatToStr(dSpeed) + 'x';

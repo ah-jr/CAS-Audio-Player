@@ -6,13 +6,14 @@ uses
   AudioManagerU in 'AudioManagerU.pas',
 
   // Cas Libraries
-  CasEngineU    in '..\deps\CasAudioEngine\CasEngineU.pas',
-  CasTrackU     in '..\deps\CasUtils\CasTrackU.pas',
-  CasMixerU     in '..\deps\CasUtils\CasMixerU.pas',
-  CasPlaylistU  in '..\deps\CasUtils\CasPlaylistU.pas',
-  CasConstantsU in '..\deps\CasUtils\CasConstantsU.pas',
-  CasDecoderU   in '..\deps\CasUtils\CasDecoderU.pas',
-  CasDatabaseU  in '..\deps\CasUtils\CasDatabaseU.pas',
+  CasEngineU    in '..\deps\CasAudioEngine\src\CasEngineU.pas',
+  CasTrackU     in '..\deps\CasAudioEngine\src\CasTrackU.pas',
+  CasMixerU     in '..\deps\CasAudioEngine\src\CasMixerU.pas',
+  CasPlaylistU  in '..\deps\CasAudioEngine\src\CasPlaylistU.pas',
+  CasConstantsU in '..\deps\CasAudioEngine\src\CasConstantsU.pas',
+  CasDecoderU   in '..\deps\CasAudioEngine\src\CasDecoderU.pas',
+  CasDatabaseU  in '..\deps\CasAudioEngine\src\CasDatabaseU.pas',
+
 
   // ASIO
   Asiolist      in '..\deps\CasAudioEngine\Asio\AsioList.pas',
