@@ -13,6 +13,7 @@ type
 
   private
     m_nPosition : Integer;
+    m_dSpeed    : Double;
     m_lstTracks : TList<Integer>;
 
     m_CasDatabase : TCasDatabase;
@@ -33,6 +34,7 @@ type
     property Progress    : Double   read GetProgress;
     property Position    : Integer  read m_nPosition   write SetPosition;
     property Length      : Integer  read GetLength;
+    property Speed       : Double   read m_dSpeed      write m_dSpeed;
 
   end;
 
@@ -47,6 +49,7 @@ uses
 constructor TCasPlaylist.Create(a_CasDatabase: TCasDatabase);
 begin
   m_nPosition   := 0;
+  m_dSpeed      := 1;
   m_CasDatabase := a_CasDatabase;
   m_lstTracks   := TList<Integer>.Create;
 end;

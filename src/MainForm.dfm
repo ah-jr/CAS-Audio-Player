@@ -2,7 +2,7 @@ object PlayerGUI: TPlayerGUI
   Left = 0
   Top = 0
   Caption = 'TPlayerGUI'
-  ClientHeight = 325
+  ClientHeight = 357
   ClientWidth = 433
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -100,8 +100,20 @@ object PlayerGUI: TPlayerGUI
     Width = 417
     Height = 214
     TabOrder = 8
+    OnMouseWheelDown = sbTrackListMouseWheelDown
+    OnMouseWheelUp = sbTrackListMouseWheelUp
+  end
+  object edtSpeed: TEdit
+    Left = 8
+    Top = 328
+    Width = 121
+    Height = 21
+    NumbersOnly = True
+    TabOrder = 9
+    OnChange = edtSpeedChange
   end
   object odOpenFile: TOpenDialog
+    Options = [ofHideReadOnly, ofAllowMultiSelect, ofEnableSizing]
     Left = 160
     Top = 16
   end

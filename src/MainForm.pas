@@ -53,6 +53,7 @@ type
     btnDriverControlPanel : TButton;
     ilMediaButtons        : TImageList;
     sbTrackList           : TScrollBox;
+    edtSpeed              : TEdit;
 
     procedure FormCreate                 (Sender: TObject);
     procedure FormDestroy                (Sender: TObject);
@@ -65,6 +66,9 @@ type
     procedure btnOpenFileClick           (Sender: TObject);
     procedure tbVolumeChange             (Sender: TObject);
     procedure tbProgressChange           (Sender: TObject);
+    procedure sbTrackListMouseWheelUp    (Sender: TObject; Shift: TShiftState; MousePos: TPoint; var Handled: Boolean);
+    procedure sbTrackListMouseWheelDown  (Sender: TObject; Shift: TShiftState; MousePos: TPoint; var Handled: Boolean);
+    procedure edtSpeedChange             (Sender: TObject);
 
   private
     m_bBlockBufferPositionUpdate : Boolean;
@@ -169,6 +173,26 @@ begin
 end;
 
 //==============================================================================
+procedure TPlayerGUI.edtSpeedChange(Sender: TObject);
+begin
+  m_CasEngine.Playlist.Speed := StrToFloat(edtSpeed.Text);
+end;
+
+//==============================================================================
+procedure TPlayerGUI.sbTrackListMouseWheelDown(Sender: TObject;
+  Shift: TShiftState; MousePos: TPoint; var Handled: Boolean);
+begin
+  sbTrackList.VertScrollBar.Position := sbTrackList.VertScrollBar.ScrollPos + 8;
+end;
+
+//==============================================================================
+procedure TPlayerGUI.sbTrackListMouseWheelUp(Sender: TObject;
+  Shift: TShiftState; MousePos: TPoint; var Handled: Boolean);
+begin
+  sbTrackList.VertScrollBar.Position := sbTrackList.VertScrollBar.ScrollPos - 8;
+end;
+
+//==============================================================================
 procedure TPlayerGUI.cbDriverChange(Sender: TObject);
 begin
   m_CasEngine.ChangeDriver(cbDriver.ItemIndex);
@@ -180,6 +204,7 @@ end;
 procedure TPlayerGUI.btnOpenFileClick(Sender: TObject);
 var
   dSampleRate : Double;
+  strFileName : String;
 begin
   if odOpenFile.Execute then
   begin
@@ -188,13 +213,16 @@ begin
     try
       dSampleRate := m_CasEngine.SampleRate;
 
-      m_CasTrack       := m_CasDecoder.DecodeFile(odOpenFile.FileName, dSampleRate);
-      m_CasTrack.Level := 0.7;
-      m_CasTrack.ID    := m_nLoadedTrackCount;
-      m_CasEngine.AddTrack(m_CasTrack, 0);
-      m_CasEngine.AddTrackToPlaylist(m_CasTrack.ID, m_CasEngine.Length);
+      for strFileName in odOpenFile.Files do
+      begin
+        m_CasTrack       := m_CasDecoder.DecodeFile(strFileName, dSampleRate);
+        m_CasTrack.Level := 0.7;
+        m_CasTrack.ID    := m_nLoadedTrackCount;
+        m_CasEngine.AddTrack(m_CasTrack, 0);
+        m_CasEngine.AddTrackToPlaylist(m_CasTrack.ID, m_CasEngine.Length);
 
-      AddTrackInfo(m_CasTrack.Title, m_CasTrack.ID);
+        AddTrackInfo(m_CasTrack.Title, m_CasTrack.ID);
+      end;
     except
       m_bFileLoaded := False;
     end;
@@ -269,6 +297,8 @@ var
   lblTitle : TLabel;
   btnPlay  : TButton;
 begin
+  sbTrackList.VertScrollBar.Position := 0;
+
   lblTitle           := TLabel.Create(sbTrackList);
   lblTitle.Parent    := sbTrackList;
   lblTitle.Align     := alNone;

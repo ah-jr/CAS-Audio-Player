@@ -91,6 +91,7 @@ type
     property BuffersOn  : Boolean   read m_bBuffersCreated;
     property SampleRate : Double    read GetSampleRate;
 
+    property Playlist   : TCasPlaylist read m_CasPlaylist write m_CasPlaylist;
     property Database   : TCasDatabase read m_CasDatabase write m_CasDatabase;
     property AsioDriver : IOpenAsio    read m_AsioDriver  write m_AsioDriver;
 
@@ -337,7 +338,7 @@ var
    Info                     : PAsioBufferInfo;
    OutputInt32              : PInteger;
 begin
-  if (m_CasPlaylist.Position < m_CasPlaylist.Length - m_nCurrentBufferSize) then
+  if (m_CasPlaylist.Position < m_CasPlaylist.Length - m_nCurrentBufferSize * m_CasPlaylist.Speed) then
   begin
     Info := m_BufferInfo;
 
@@ -387,8 +388,6 @@ begin
       Inc(Info);
     end;
 
-    m_CasPlaylist.Position := m_CasPlaylist.Position + m_nCurrentBufferSize;
-
     PostMessage(Handle, CM_UpdateSamplePos, Params.TimeInfo.SamplePosition.Hi, Params.TimeInfo.SamplePosition.Lo);
     m_AsioDriver.OutputReady;
   end
@@ -405,17 +404,19 @@ procedure TCasEngine.CalculateBuffers;
 var
   nBufferIdx  : Integer;
   nPosition   : Integer;
+  dSpeed      : Double;
   nTrackIdx   : Integer;
   CasTrack    : TCasTrack;
   CasMixer    : TCasMixer;
 begin
   nPosition := m_CasPlaylist.Position;
+  dSpeed    := m_CasPlaylist.Speed;
 
   SetLength(m_LeftBuffer,  m_nCurrentBufferSize);
   SetLength(m_RightBuffer, m_nCurrentBufferSize);
 
   // Clear buffers:
-  for nBufferIdx := 0 to m_nCurrentBufferSize-1 do
+  for nBufferIdx := 0 to m_nCurrentBufferSize - 1 do
   begin
     m_LeftBuffer [nBufferIdx] := 0;
     m_RightBuffer[nBufferIdx] := 0;
@@ -428,26 +429,28 @@ begin
     begin
       if m_CasDatabase.GetTrackById(nTrackIdx, CasTrack) then
       begin
-        // If track's position is positive, it's in the playlist.
+        // If track's position is positive, it's in the playlist:
         if (CasTrack.Position >= 0) then
         begin
           // If playlist reached track's position, plays:
           if (CasTrack.Position <= nPosition) and
-             ((nPosition - CasTrack.Position) < (CasTrack.Size - m_nCurrentBufferSize)) then
+             ((nPosition - CasTrack.Position) < (CasTrack.Size - m_nCurrentBufferSize * dSpeed)) then
           begin
             for nBufferIdx := 0 to m_nCurrentBufferSize - 1 do
             begin
               m_LeftBuffer [nBufferIdx] := m_LeftBuffer[nBufferIdx]  +
-                Trunc(CasMixer.Level * CasTrack.RawData.Left [nPosition - CasTrack.Position + nBufferIdx]);
+                Trunc(CasMixer.Level * CasTrack.RawData.Left [Trunc(nPosition - CasTrack.Position + dSpeed * nBufferIdx)]);
 
               m_RightBuffer[nBufferIdx] := m_RightBuffer[nBufferIdx] +
-                Trunc(CasMixer.Level * CasTrack.RawData.Right[nPosition - CasTrack.Position + nBufferIdx]);
+                Trunc(CasMixer.Level * CasTrack.RawData.Right[Trunc(nPosition - CasTrack.Position + dSpeed * nBufferIdx)]);
             end;
           end;
         end;
       end;
     end;
   end;
+
+  m_CasPlaylist.Position := m_CasPlaylist.Position + Trunc(dSpeed * m_nCurrentBufferSize);
 end;
 
 //==============================================================================
