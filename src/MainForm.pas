@@ -53,7 +53,7 @@ type
     btnDriverControlPanel : TButton;
     ilMediaButtons        : TImageList;
     sbTrackList           : TScrollBox;
-    edtSpeed              : TEdit;
+    tbSpeed               : TTrackBar;
 
     procedure FormCreate                 (Sender: TObject);
     procedure FormDestroy                (Sender: TObject);
@@ -68,7 +68,7 @@ type
     procedure tbProgressChange           (Sender: TObject);
     procedure sbTrackListMouseWheelUp    (Sender: TObject; Shift: TShiftState; MousePos: TPoint; var Handled: Boolean);
     procedure sbTrackListMouseWheelDown  (Sender: TObject; Shift: TShiftState; MousePos: TPoint; var Handled: Boolean);
-    procedure edtSpeedChange             (Sender: TObject);
+    procedure tbSpeedChange              (Sender: TObject);
 
   private
     m_bBlockBufferPositionUpdate : Boolean;
@@ -173,12 +173,6 @@ begin
 end;
 
 //==============================================================================
-procedure TPlayerGUI.edtSpeedChange(Sender: TObject);
-begin
-  m_CasEngine.Playlist.Speed := StrToFloat(edtSpeed.Text);
-end;
-
-//==============================================================================
 procedure TPlayerGUI.sbTrackListMouseWheelDown(Sender: TObject;
   Shift: TShiftState; MousePos: TPoint; var Handled: Boolean);
 begin
@@ -265,6 +259,30 @@ procedure TPlayerGUI.tbVolumeChange(Sender: TObject);
 begin
   m_CasEngine.Level := (tbVolume.Max - tbVolume.Position) / tbVolume.Max;
 end;
+
+//==============================================================================
+procedure TPlayerGUI.tbSpeedChange(Sender: TObject);
+var
+  dSpeed : Double;
+begin
+  case tbSpeed.Position of
+    10: dSpeed := 0.1;
+    9:  dSpeed := 0.3;
+    8:  dSpeed := 0.5;
+    7:  dSpeed := 0.75;
+    6:  dSpeed := 0.9;
+    5:  dSpeed := 1;
+    4:  dSpeed := 1.2;
+    3:  dSpeed := 1.5;
+    2:  dSpeed := 2;
+    1:  dSpeed := 3;
+    0:  dSpeed := 5;
+  end;
+
+  tbSpeed.Hint := 'Speed: ' + FloatToStr(dSpeed) + 'x';
+  m_CasEngine.Playlist.Speed := dSpeed;
+end;
+
 //==============================================================================
 procedure TPlayerGUI.tbProgressChange(Sender: TObject);
 begin

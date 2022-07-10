@@ -2,8 +2,8 @@ object PlayerGUI: TPlayerGUI
   Left = 0
   Top = 0
   Caption = 'TPlayerGUI'
-  ClientHeight = 357
-  ClientWidth = 433
+  ClientHeight = 322
+  ClientWidth = 459
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -62,8 +62,11 @@ object PlayerGUI: TPlayerGUI
     Top = 3
     Width = 34
     Height = 94
+    Hint = 'Output Level'
     Max = 100
     Orientation = trVertical
+    ParentShowHint = False
+    ShowHint = True
     TabOrder = 4
     OnChange = tbVolumeChange
   end
@@ -97,20 +100,24 @@ object PlayerGUI: TPlayerGUI
   object sbTrackList: TScrollBox
     Left = 8
     Top = 103
-    Width = 417
+    Width = 449
     Height = 214
     TabOrder = 8
     OnMouseWheelDown = sbTrackListMouseWheelDown
     OnMouseWheelUp = sbTrackListMouseWheelUp
   end
-  object edtSpeed: TEdit
-    Left = 8
-    Top = 328
-    Width = 121
-    Height = 21
-    NumbersOnly = True
+  object tbSpeed: TTrackBar
+    Left = 434
+    Top = 3
+    Width = 34
+    Height = 94
+    Hint = 'Speed: 1x'
+    Orientation = trVertical
+    ParentShowHint = False
+    Position = 5
+    ShowHint = True
     TabOrder = 9
-    OnChange = edtSpeedChange
+    OnChange = tbSpeedChange
   end
   object odOpenFile: TOpenDialog
     Options = [ofHideReadOnly, ofAllowMultiSelect, ofEnableSizing]
