@@ -13,6 +13,8 @@ uses
   CasConstantsU in '..\deps\CasAudioEngine\src\CasConstantsU.pas',
   CasDecoderU   in '..\deps\CasAudioEngine\src\CasDecoderU.pas',
   CasDatabaseU  in '..\deps\CasAudioEngine\src\CasDatabaseU.pas',
+  CasBasicFxU   in '..\deps\CasAudioEngine\src\CasBasicFxU.pas',
+  CasUtilsU     in '..\deps\CasAudioEngine\src\CasUtilsU.pas',
 
 
   // ASIO
