@@ -1,9 +1,10 @@
 object PlayerGUI: TPlayerGUI
   Left = 0
   Top = 0
+  BorderStyle = bsNone
   Caption = 'TPlayerGUI'
-  ClientHeight = 322
-  ClientWidth = 459
+  ClientHeight = 377
+  ClientWidth = 510
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -16,19 +17,19 @@ object PlayerGUI: TPlayerGUI
   PixelsPerInch = 96
   TextHeight = 13
   object btnOpenFile: TButton
-    Left = 8
-    Top = 37
+    Left = 26
+    Top = 66
     Width = 108
-    Height = 26
+    Height = 24
     Caption = 'Open File'
     TabOrder = 0
     OnClick = btnOpenFileClick
   end
   object btnPlay: TButton
-    Left = 124
-    Top = 8
+    Left = 142
+    Top = 37
     Width = 85
-    Height = 55
+    Height = 53
     ImageIndex = 0
     ImageMargins.Left = 25
     Images = ilMediaButtons
@@ -36,10 +37,10 @@ object PlayerGUI: TPlayerGUI
     OnClick = btnPlayClick
   end
   object btnStop: TButton
-    Left = 310
-    Top = 8
+    Left = 328
+    Top = 37
     Width = 85
-    Height = 55
+    Height = 53
     ImageIndex = 2
     ImageMargins.Left = 23
     Images = ilMediaButtons
@@ -47,10 +48,10 @@ object PlayerGUI: TPlayerGUI
     OnClick = btnStopClick
   end
   object btnPause: TButton
-    Left = 217
-    Top = 8
+    Left = 235
+    Top = 37
     Width = 85
-    Height = 55
+    Height = 53
     ImageIndex = 1
     ImageMargins.Left = 23
     Images = ilMediaButtons
@@ -58,10 +59,10 @@ object PlayerGUI: TPlayerGUI
     OnClick = btnPauseClick
   end
   object tbVolume: TTrackBar
-    Left = 403
-    Top = 3
+    Left = 423
+    Top = 37
     Width = 34
-    Height = 94
+    Height = 87
     Hint = 'Output Level'
     Max = 100
     Orientation = trVertical
@@ -71,17 +72,17 @@ object PlayerGUI: TPlayerGUI
     OnChange = tbVolumeChange
   end
   object tbProgress: TTrackBar
-    Left = 118
-    Top = 71
+    Left = 136
+    Top = 97
     Width = 282
-    Height = 26
+    Height = 24
     Max = 100
     TabOrder = 5
     OnChange = tbProgressChange
   end
   object cbDriver: TComboBox
-    Left = 8
-    Top = 8
+    Left = 26
+    Top = 39
     Width = 108
     Height = 21
     TabOrder = 6
@@ -89,28 +90,33 @@ object PlayerGUI: TPlayerGUI
     OnChange = cbDriverChange
   end
   object btnDriverControlPanel: TButton
-    Left = 8
-    Top = 71
+    Left = 26
+    Top = 96
     Width = 108
-    Height = 26
+    Height = 24
     Caption = 'Asio Control Panel'
     TabOrder = 7
     OnClick = btnDriverControlPanelClick
   end
   object sbTrackList: TScrollBox
-    Left = 8
-    Top = 103
-    Width = 449
+    Left = 26
+    Top = 138
+    Width = 456
     Height = 214
+    BevelInner = bvNone
+    BevelOuter = bvNone
+    BorderStyle = bsNone
+    Color = clBackground
+    ParentColor = False
     TabOrder = 8
     OnMouseWheelDown = sbTrackListMouseWheelDown
     OnMouseWheelUp = sbTrackListMouseWheelUp
   end
   object tbSpeed: TTrackBar
-    Left = 434
-    Top = 3
+    Left = 459
+    Top = 37
     Width = 34
-    Height = 94
+    Height = 87
     Hint = 'Speed: 1x'
     Orientation = trVertical
     ParentShowHint = False

@@ -16,11 +16,14 @@ uses
   CasBasicFxU   in '..\deps\CasAudioEngine\src\CasBasicFxU.pas',
   CasUtilsU     in '..\deps\CasAudioEngine\src\CasUtilsU.pas',
 
-
   // ASIO
   Asiolist      in '..\deps\CasAudioEngine\Asio\AsioList.pas',
   Asio          in '..\deps\CasAudioEngine\Asio\Asio.pas',
-  OpenAsio      in '..\deps\CasAudioEngine\Asio\OpenAsio.pas';
+  OpenAsio      in '..\deps\CasAudioEngine\Asio\OpenAsio.pas',
+
+  // Acrylic Form
+  HitTransparentPanel in '..\deps\TAcrylicForm\src\HitTransparentPanel.pas',
+  AcrylicFormU        in '..\deps\TAcrylicForm\src\AcrylicFormU.pas';
 
 
 {$R *.res}

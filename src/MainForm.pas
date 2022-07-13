@@ -38,10 +38,12 @@ uses
   CasEngineU,
   CasDecoderU,
   CasTrackU,
-  CasConstantsU, Vcl.ExtCtrls;
+  CasConstantsU,
+  AcrylicFormU,
+  Vcl.ExtCtrls;
 
 type
-  TPlayerGUI = class(TForm)
+  TPlayerGUI = class(TAcrylicForm)
     btnOpenFile           : TButton;
     btnPlay               : TButton;
     btnStop               : TButton;
@@ -103,8 +105,11 @@ implementation
 //==============================================================================
 procedure TPlayerGUI.FormCreate(Sender: TObject);
 begin
+  Inherited;
   Caption     := 'CAS Audio Player';
-  BorderStyle := bsDialog;
+  Resizable   := False;
+  Color       := $151515;
+  BlurAmount  := 140;
 
   InitializeVariables;
   ChangeEnabledObjects;
@@ -318,26 +323,28 @@ var
 begin
   sbTrackList.VertScrollBar.Position := 0;
 
-  lblTitle           := TLabel.Create(sbTrackList);
-  lblTitle.Parent    := sbTrackList;
-  lblTitle.Align     := alNone;
-  lblTitle.Font.Size := 10;
-  lblTitle.Caption   := IntToStr(m_nLoadedTrackCount + 1) + ') ' + a_strTitle;
-  lblTitle.Top       := m_nLoadedTrackCount*25 + 3;
-  lblTitle.Left      := 2;
-  lblTitle.Width     := sbTrackList.Width - 75;
-  lblTitle.Height    := 20;
+  lblTitle             := TLabel.Create(sbTrackList);
+  lblTitle.Parent      := sbTrackList;
+  lblTitle.Align       := alNone;
+  lblTitle.Font.Size   := 10;
+  lblTitle.Caption     := ' ' + IntToStr(m_nLoadedTrackCount + 1) + ') ' + a_strTitle;
+  lblTitle.Top         := m_nLoadedTrackCount*25 + 3;
+  lblTitle.Left        := 2;
+  lblTitle.Width       := sbTrackList.Width - 75;
+  lblTitle.Height      := 20;
+  lblTitle.Transparent := False;
+  lblTitle.Color       := clWhite;
 
-  btnPlay            := TButton.Create(sbTrackList);
-  btnPlay.Parent     := sbTrackList;
-  btnPlay.Align      := alNone;
-  btnPlay.Caption    := 'Jump';
-  btnPlay.Name       := 'btn' + IntToStr(a_nTrackId);
-  btnPlay.OnClick    := btnJumpClick;
-  btnPlay.Width      := 40;
-  btnPlay.Height     := 20;
-  btnPlay.Left       := sbTrackList.Width - btnPlay.Width - 25;
-  btnPlay.Top        := m_nLoadedTrackCount*25 + 3;
+  btnPlay              := TButton.Create(sbTrackList);
+  btnPlay.Parent       := sbTrackList;
+  btnPlay.Align        := alNone;
+  btnPlay.Caption      := 'Jump';
+  btnPlay.Name         := 'btn' + IntToStr(a_nTrackId);
+  btnPlay.OnClick      := btnJumpClick;
+  btnPlay.Width        := 40;
+  btnPlay.Height       := 20;
+  btnPlay.Left         := sbTrackList.Width - btnPlay.Width - 25;
+  btnPlay.Top          := m_nLoadedTrackCount*25 + 3;
 
   Inc(m_nLoadedTrackCount);
 end;

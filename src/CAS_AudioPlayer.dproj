@@ -118,7 +118,11 @@
         <DCCReference Include="..\deps\CasAudioEngine\src\CasUtilsU.pas"/>
         <DCCReference Include="..\deps\CasAudioEngine\Asio\AsioList.pas"/>
         <DCCReference Include="..\deps\CasAudioEngine\Asio\Asio.pas"/>
-        <DCCReference Include="..\deps\CasAudioEngine\Asio\OpenAsio.pas"/>
+        <DCCReference Include="..\deps\CasAudioEngine\Asio\OpenAsio.pas">
+            <Form>/ Acrylic Form</Form>
+        </DCCReference>
+        <DCCReference Include="..\deps\TAcrylicForm\src\HitTransparentPanel.pas"/>
+        <DCCReference Include="..\deps\TAcrylicForm\src\AcrylicFormU.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
