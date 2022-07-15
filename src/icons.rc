@@ -1,0 +1,3 @@
+btnPlay  RCDATA "../images/btnPlay.png"
+btnPause RCDATA "../images/btnPause.png"
+btnStop  RCDATA "../images/btnStop.png"

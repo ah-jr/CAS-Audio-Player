@@ -28,37 +28,32 @@ uses
   Vcl.Controls,
   Vcl.Forms,
   Vcl.ImgList,
+  Vcl.ExtCtrls,
   AsioList,
-  OpenAsio,
-  Asio,
   Math,
   ShellApi,
   IOUtils,
+  GDIPOBJ,
   AudioManagerU,
   CasEngineU,
   CasDecoderU,
   CasTrackU,
   CasConstantsU,
-  AcrylicFormU,
-  Vcl.ExtCtrls;
+  AcrylicFormU;
 
 type
   TPlayerGUI = class(TAcrylicForm)
-    btnOpenFile           : TButton;
-    btnPlay               : TButton;
-    btnStop               : TButton;
-    btnPause              : TButton;
     odOpenFile            : TOpenDialog;
     tbVolume              : TTrackBar;
     tbProgress            : TTrackBar;
-    cbDriver              : TComboBox;
-    btnDriverControlPanel : TButton;
-    ilMediaButtons        : TImageList;
-    sbTrackList           : TScrollBox;
     tbSpeed               : TTrackBar;
+    cbDriver              : TComboBox;
+    sbTrackList           : TScrollBox;
+
 
     procedure FormCreate                 (Sender: TObject);
     procedure FormDestroy                (Sender: TObject);
+    procedure FormPaint                  (Sender: TObject);
     procedure cbDriverChange             (Sender: TObject);
     procedure btnDriverControlPanelClick (Sender: TObject);
     procedure btnPauseClick              (Sender: TObject);
@@ -68,9 +63,10 @@ type
     procedure btnOpenFileClick           (Sender: TObject);
     procedure tbVolumeChange             (Sender: TObject);
     procedure tbProgressChange           (Sender: TObject);
+    procedure tbSpeedChange              (Sender: TObject);
     procedure sbTrackListMouseWheelUp    (Sender: TObject; Shift: TShiftState; MousePos: TPoint; var Handled: Boolean);
     procedure sbTrackListMouseWheelDown  (Sender: TObject; Shift: TShiftState; MousePos: TPoint; var Handled: Boolean);
-    procedure tbSpeedChange              (Sender: TObject);
+
 
   private
     m_bBlockBufferPositionUpdate : Boolean;
@@ -82,6 +78,10 @@ type
     m_CasDecoder                 : TCasDecoder;
     m_CasTrack                   : TCasTrack;
 
+    m_GdiGraphics                : TGPGraphics;
+    m_GdiSolidPen                : TGPPen;
+    m_GdiBrush                   : TGPSolidBrush;
+
     m_DriverList                 : TAsioDriverList;
 
     procedure EngineNotification(var MsgRec: TMessage); message CM_NotifyOwner;
@@ -89,16 +89,25 @@ type
     procedure AddTrackInfo(a_strTitle : String; a_nTrackId : Integer);
 
     procedure InitializeVariables;
+    procedure RecreateGdiObject;
     procedure ChangeEnabledObjects;
     procedure UpdateBufferPosition;
     procedure UpdateProgressBar;
 
+    procedure CREATE_ACRYLIC_OBJECTS;
 end;
 
 var
   PlayerGUI: TPlayerGUI;
 
 implementation
+
+uses
+  GDIPAPI,
+  GDIPUTIL,
+  Vcl.Imaging.pngimage,
+  AcrylicButtonU,
+  AcrylicLabelU;
 
 {$R *.dfm}
 
@@ -109,10 +118,73 @@ begin
   Caption     := 'CAS Audio Player';
   Resizable   := False;
   Color       := $151515;
-  BlurAmount  := 140;
+  BlurAmount  := 170;
 
   InitializeVariables;
   ChangeEnabledObjects;
+
+  CREATE_ACRYLIC_OBJECTS;
+end;
+
+//==============================================================================
+// This procedure is temporary until we have a package with all components
+//==============================================================================
+procedure TPlayerGUI.CREATE_ACRYLIC_OBJECTS;
+var
+  acrylicbutton: tacrylicbutton;
+  png : TPngImage;
+begin
+  acrylicbutton := tacrylicbutton.Create(Self);
+  acrylicbutton.Parent := Self;
+  acrylicbutton.Top := 48;
+  acrylicbutton.Left := 142;
+  acrylicbutton.Width := 85;
+  acrylicbutton.Height := 53;
+  acrylicbutton.OnClick := btnPlayClick;
+  png := TPngImage.Create;
+  png.LoadFromResourceName(HInstance, 'btnPlay');
+  acrylicbutton.Png := png;
+
+  acrylicbutton := tacrylicbutton.Create(Self);
+  acrylicbutton.Parent := Self;
+  acrylicbutton.Top := 48;
+  acrylicbutton.Left := 235;
+  acrylicbutton.Width := 85;
+  acrylicbutton.Height := 53;
+  acrylicbutton.OnClick := btnPauseClick;
+  png := TPngImage.Create;
+  png.LoadFromResourceName(HInstance, 'btnPause');
+  acrylicbutton.Png := png;
+
+  acrylicbutton := tacrylicbutton.Create(Self);
+  acrylicbutton.Parent := Self;
+  acrylicbutton.Top := 48;
+  acrylicbutton.Left := 328;
+  acrylicbutton.Width := 85;
+  acrylicbutton.Height := 53;
+  acrylicbutton.OnClick := btnStopClick;
+  png := TPngImage.Create;
+  png.LoadFromResourceName(HInstance, 'btnStop');
+  acrylicbutton.Png := png;
+
+  acrylicbutton := tacrylicbutton.Create(Self);
+  acrylicbutton.Parent := Self;
+  acrylicbutton.Top := 77;
+  acrylicbutton.Left := 26;
+  acrylicbutton.Width := 108;
+  acrylicbutton.Height := 24;
+  acrylicbutton.OnClick := btnOpenFileClick;
+  acrylicbutton.Text := 'Open File';
+
+  acrylicbutton := tacrylicbutton.Create(Self);
+  acrylicbutton.Parent := Self;
+  acrylicbutton.Top := 107;
+  acrylicbutton.Left := 26;
+  acrylicbutton.Width := 108;
+  acrylicbutton.Height := 24;
+  acrylicbutton.OnClick := btnDriverControlPanelClick;
+  acrylicbutton.Text := 'ASIO Control Panel';
+
 end;
 
 //==============================================================================
@@ -122,7 +194,25 @@ begin
   m_CasDecoder.Free;
   m_CasTrack.Free;
 
+  m_GdiGraphics.Free;
+  m_GdiSolidPen.Free;
+  m_GdiBrush.Free;
+
   SetLength(m_DriverList, 0);
+end;
+
+//==============================================================================
+procedure TPlayerGUI.FormPaint(Sender: TObject);
+begin
+  RecreateGdiObject;
+
+  // Make titlebar a bit darker:
+  m_GdiBrush.SetColor(MakeColor(80,
+                                GetRValue(clBlack),
+                                GetGValue(clBlack),
+                                GetBValue(clBlack)));
+
+  m_GdiGraphics.FillRectangle(m_GdiBrush, 0, 0, ClientWidth, 32);
 end;
 
 //==============================================================================
@@ -134,8 +224,14 @@ begin
   m_CasDecoder := TCasDecoder.Create;
   m_CasTrack   := nil;
 
-  tbVolume.Position            := 30;
-  m_nLoadedTrackCount          := 0;
+  m_GdiGraphics := TGPGraphics.Create(0);
+  m_GdiSolidPen := TGPPen.Create(0, 1);
+  m_GdiBrush    := TGPSolidBrush.Create(0);
+
+  m_GdiGraphics.SetSmoothingMode(SmoothingModeAntiAlias);
+
+  tbVolume.Position   := 30;
+  m_nLoadedTrackCount := 0;
 
   m_bFileLoaded                := False;
   m_bBlockBufferPositionUpdate := False;
@@ -144,6 +240,15 @@ begin
   ListAsioDrivers(m_DriverList);
   for nDriverIdx := Low(m_DriverList) to High(m_DriverList) do
     cbDriver.Items.Add(String(m_DriverList[nDriverIdx].name));
+end;
+
+//==============================================================================
+procedure TPlayerGUI.RecreateGdiObject;
+begin
+  if m_GdiGraphics <> nil then
+  m_GdiGraphics.Free;
+
+  m_GdiGraphics := TGPGraphics.Create(Canvas.Handle);
 end;
 
 //==============================================================================
@@ -167,14 +272,14 @@ end;
 //==============================================================================
 procedure TPlayerGUI.ChangeEnabledObjects;
 begin
-  btnDriverControlPanel.Enabled := (m_CasEngine.Ready);
-  btnOpenFile.Enabled           := (m_CasEngine.Ready);
-  btnPlay.Enabled               := (m_CasEngine.Ready)       and
-                                   (m_CasEngine.BuffersOn)   and
-                                   (not m_CasEngine.Playing) and
-                                   (m_bFileLoaded);
-  btnPause.Enabled              := m_CasEngine.Playing;
-  btnStop.Enabled               := m_CasEngine.Playing;
+//  btnDriverControlPanel.Enabled := (m_CasEngine.Ready);
+//  btnOpenFile.Enabled           := (m_CasEngine.Ready);
+//  btnPlay.Enabled               := (m_CasEngine.Ready)       and
+//                                   (m_CasEngine.BuffersOn)   and
+//                                   (not m_CasEngine.Playing) and
+//                                   (m_bFileLoaded);
+//  btnPause.Enabled              := m_CasEngine.Playing;
+//  btnStop.Enabled               := m_CasEngine.Playing;
 end;
 
 //==============================================================================
@@ -318,12 +423,12 @@ end;
 //==============================================================================
 procedure TPlayerGUI.AddTrackInfo(a_strTitle : String; a_nTrackId : Integer);
 var
-  lblTitle : TLabel;
-  btnPlay  : TButton;
+  lblTitle : TAcrylicLabel;
+  btnPlay  : TAcrylicButton;
 begin
   sbTrackList.VertScrollBar.Position := 0;
 
-  lblTitle             := TLabel.Create(sbTrackList);
+  lblTitle             := TAcrylicLabel.Create(sbTrackList);
   lblTitle.Parent      := sbTrackList;
   lblTitle.Align       := alNone;
   lblTitle.Font.Size   := 10;
@@ -335,10 +440,10 @@ begin
   lblTitle.Transparent := False;
   lblTitle.Color       := clWhite;
 
-  btnPlay              := TButton.Create(sbTrackList);
+  btnPlay              := TAcrylicButton.Create(sbTrackList);
   btnPlay.Parent       := sbTrackList;
   btnPlay.Align        := alNone;
-  btnPlay.Caption      := 'Jump';
+  btnPlay.Text         := 'Jump';
   btnPlay.Name         := 'btn' + IntToStr(a_nTrackId);
   btnPlay.OnClick      := btnJumpClick;
   btnPlay.Width        := 40;
@@ -354,7 +459,7 @@ procedure TPlayerGUI.btnJumpClick(Sender : TObject);
 var
   CasTrack : TCasTrack;
 begin
-  if m_CasEngine.Database.GetTrackByID(StrToInt(String((Sender as TButton).Name).SubString(3)), CasTrack) then
+  if m_CasEngine.Database.GetTrackByID(StrToInt(String((Sender as TAcrylicButton).Name).SubString(3)), CasTrack) then
     m_CasEngine.Position := CasTrack.Position;
 end;
 

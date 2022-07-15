@@ -1,0 +1,16 @@
+==============================================================================
+CAS AudioPlayer - PATCH NOTES 
+==============================================================================
+
+v1.0a:  
+  
+  - First usable version of the player. 
+  - User must clone TAcrylicForm v1.1 and CAS-Engine v1.3 to compile 
+    (see README.md).  
+  - Must have an ASIO driver installed to play audio. 
+    (easiest solution is ASIO4All).
+  - Progress bar doesn't update yet due to a problem in the implementation of
+    the audio callback. Apparently using PostMessage in the callback method
+    can delay it on certain occasions. This will be fixed in version 1.0.
+  - Buttons don't disable when the audio buffers are not ready. This will 
+    also be fixed in version 1.0.

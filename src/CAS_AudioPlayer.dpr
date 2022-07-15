@@ -1,5 +1,7 @@
 program CAS_AudioPlayer;
 
+{$R 'icons.res' 'icons.rc'}
+
 uses
   Vcl.Forms,
   MainForm      in 'MainForm.pas',
@@ -19,11 +21,13 @@ uses
   // ASIO
   Asiolist      in '..\deps\CasAudioEngine\Asio\AsioList.pas',
   Asio          in '..\deps\CasAudioEngine\Asio\Asio.pas',
-  OpenAsio      in '..\deps\CasAudioEngine\Asio\OpenAsio.pas',
 
   // Acrylic Form
-  HitTransparentPanel in '..\deps\TAcrylicForm\src\HitTransparentPanel.pas',
-  AcrylicFormU        in '..\deps\TAcrylicForm\src\AcrylicFormU.pas';
+  AcrylicGhostPanelU in '..\deps\TAcrylicForm\src\AcrylicGhostPanelU.pas',
+  AcrylicFormU       in '..\deps\TAcrylicForm\src\AcrylicFormU.pas',
+  AcrylicButtonU     in '..\deps\TAcrylicForm\src\AcrylicButtonU.pas',
+  AcrylicLabelU      in '..\deps\TAcrylicForm\src\AcrylicLabelU.pas',
+  AcrylicTypesU      in '..\deps\TAcrylicForm\src\AcrylicTypesU.pas';
 
 
 {$R *.res}
