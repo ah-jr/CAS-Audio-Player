@@ -3,7 +3,7 @@ object PlayerGUI: TPlayerGUI
   Top = 0
   BorderStyle = bsNone
   Caption = 'TPlayerGUI'
-  ClientHeight = 386
+  ClientHeight = 150
   ClientWidth = 497
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -54,20 +54,6 @@ object PlayerGUI: TPlayerGUI
     Text = 'Select Output'
     OnChange = cbDriverChange
   end
-  object sbTrackList: TScrollBox
-    Left = 26
-    Top = 148
-    Width = 444
-    Height = 214
-    BevelInner = bvNone
-    BevelOuter = bvNone
-    BorderStyle = bsNone
-    Color = clBackground
-    ParentColor = False
-    TabOrder = 3
-    OnMouseWheelDown = sbTrackListMouseWheelDown
-    OnMouseWheelUp = sbTrackListMouseWheelUp
-  end
   object tbSpeed: TTrackBar
     Left = 449
     Top = 43
@@ -79,10 +65,50 @@ object PlayerGUI: TPlayerGUI
     Position = 5
     ShowHint = True
     ShowSelRange = False
-    TabOrder = 4
+    TabOrder = 3
     TickMarks = tmBoth
     TickStyle = tsNone
     OnChange = tbSpeedChange
+  end
+  object btnPlay: TAcrylicButton
+    Left = 142
+    Top = 48
+    Width = 85
+    Height = 53
+    Text = ''
+    OnClick = btnPlayClick
+  end
+  object btnPause: TAcrylicButton
+    Left = 235
+    Top = 48
+    Width = 85
+    Height = 53
+    Text = ''
+    OnClick = btnPauseClick
+  end
+  object btnStop: TAcrylicButton
+    Left = 328
+    Top = 48
+    Width = 85
+    Height = 53
+    Text = ''
+    OnClick = btnStopClick
+  end
+  object btnOpenFile: TAcrylicButton
+    Left = 26
+    Top = 77
+    Width = 108
+    Height = 24
+    Text = 'Open File'
+    OnClick = btnOpenFileClick
+  end
+  object btnDriverControlPanel: TAcrylicButton
+    Left = 26
+    Top = 107
+    Width = 108
+    Height = 24
+    Text = 'Driver Settings'
+    OnClick = btnDriverControlPanelClick
   end
   object odOpenFile: TOpenDialog
     Options = [ofHideReadOnly, ofAllowMultiSelect, ofEnableSizing]

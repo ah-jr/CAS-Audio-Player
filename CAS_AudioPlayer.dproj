@@ -85,8 +85,8 @@
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
-        <DCC_ExeOutput>..\bin</DCC_ExeOutput>
-        <DCC_DcuOutput>..\dcu</DCC_DcuOutput>
+        <DCC_ExeOutput>bin</DCC_ExeOutput>
+        <DCC_DcuOutput>dcu</DCC_DcuOutput>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
@@ -102,30 +102,25 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
-        <RcCompile Include="icons.rc">
-            <Form>icons.res</Form>
-        </RcCompile>
-        <DCCReference Include="MainForm.pas">
-            <Form>Form1</Form>
-            <FormType>dfm</FormType>
-        </DCCReference>
-        <DCCReference Include="AudioManagerU.pas"/>
-        <DCCReference Include="..\deps\CasAudioEngine\src\CasEngineU.pas"/>
-        <DCCReference Include="..\deps\CasAudioEngine\src\CasTrackU.pas"/>
-        <DCCReference Include="..\deps\CasAudioEngine\src\CasMixerU.pas"/>
-        <DCCReference Include="..\deps\CasAudioEngine\src\CasPlaylistU.pas"/>
-        <DCCReference Include="..\deps\CasAudioEngine\src\CasConstantsU.pas"/>
-        <DCCReference Include="..\deps\CasAudioEngine\src\CasDecoderU.pas"/>
-        <DCCReference Include="..\deps\CasAudioEngine\src\CasDatabaseU.pas"/>
-        <DCCReference Include="..\deps\CasAudioEngine\src\CasBasicFxU.pas"/>
-        <DCCReference Include="..\deps\CasAudioEngine\src\CasUtilsU.pas"/>
-        <DCCReference Include="..\deps\CasAudioEngine\Asio\AsioList.pas"/>
-        <DCCReference Include="..\deps\CasAudioEngine\Asio\Asio.pas"/>
-        <DCCReference Include="..\deps\TAcrylicForm\src\AcrylicGhostPanelU.pas"/>
-        <DCCReference Include="..\deps\TAcrylicForm\src\AcrylicFormU.pas"/>
-        <DCCReference Include="..\deps\TAcrylicForm\src\AcrylicButtonU.pas"/>
-        <DCCReference Include="..\deps\TAcrylicForm\src\AcrylicLabelU.pas"/>
-        <DCCReference Include="..\deps\TAcrylicForm\src\AcrylicTypesU.pas"/>
+        <DCCReference Include="src\PlayerFormU.pas"/>
+        <DCCReference Include="src\AudioManagerU.pas"/>
+        <DCCReference Include="deps\CasAudioEngine\src\CasEngineU.pas"/>
+        <DCCReference Include="deps\CasAudioEngine\src\CasTrackU.pas"/>
+        <DCCReference Include="deps\CasAudioEngine\src\CasMixerU.pas"/>
+        <DCCReference Include="deps\CasAudioEngine\src\CasPlaylistU.pas"/>
+        <DCCReference Include="deps\CasAudioEngine\src\CasConstantsU.pas"/>
+        <DCCReference Include="deps\CasAudioEngine\src\CasDecoderU.pas"/>
+        <DCCReference Include="deps\CasAudioEngine\src\CasDatabaseU.pas"/>
+        <DCCReference Include="deps\CasAudioEngine\src\CasBasicFxU.pas"/>
+        <DCCReference Include="deps\CasAudioEngine\src\CasUtilsU.pas"/>
+        <DCCReference Include="deps\CasAudioEngine\Asio\AsioList.pas"/>
+        <DCCReference Include="deps\CasAudioEngine\Asio\Asio.pas"/>
+        <DCCReference Include="deps\TAcrylicForm\src\AcrylicGhostPanelU.pas"/>
+        <DCCReference Include="deps\TAcrylicForm\src\AcrylicFormU.pas"/>
+        <DCCReference Include="deps\TAcrylicForm\src\AcrylicButtonU.pas"/>
+        <DCCReference Include="deps\TAcrylicForm\src\AcrylicLabelU.pas"/>
+        <DCCReference Include="deps\TAcrylicForm\src\AcrylicTypesU.pas"/>
+        <DCCReference Include="deps\TAcrylicForm\src\AcrylicTrackU.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

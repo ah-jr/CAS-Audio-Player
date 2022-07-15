@@ -2,6 +2,12 @@
 CAS AudioPlayer - PATCH NOTES 
 ==============================================================================
 
+v1.0b:
+
+  - Rearranged project files.
+  - Added TAcrylicTrack components.
+  - Removed scroll panel.  
+
 v1.0a:  
   
   - First usable version of the player. 
