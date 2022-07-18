@@ -21,6 +21,7 @@ uses
   System.SysUtils,
   System.UITypes,
   System.ImageList,
+  System.Generics.Collections,
   Vcl.ComCtrls,
   Vcl.StdCtrls,
   Vcl.Dialogs,
@@ -42,8 +43,6 @@ uses
   AcrylicFormU,
   AcrylicButtonU,
   AcrylicTrackU;
-
-{$R 'PlayerFormU.res' 'PlayerFormU.rc'}
 
 type
   TPlayerGUI = class(TAcrylicForm)
@@ -90,6 +89,7 @@ type
     m_GdiBrush                   : TGPSolidBrush;
 
     m_DriverList                 : TAsioDriverList;
+    m_lstTracks                  : TList<TPanel>;
 
     procedure EngineNotification(var MsgRec: TMessage); message CM_NotifyOwner;
 
@@ -113,7 +113,6 @@ uses
   GDIPAPI,
   GDIPUTIL,
   Vcl.Imaging.pngimage,
-  AcrylicLabelU,
   CasUtilsU;
 
 {$R *.dfm}
@@ -155,6 +154,8 @@ end;
 
 //==============================================================================
 procedure TPlayerGUI.FormDestroy(Sender: TObject);
+var
+  pnlPanel : TPanel;
 begin
   m_CasEngine.Free;
   m_CasDecoder.Free;
@@ -163,6 +164,11 @@ begin
   m_GdiGraphics.Free;
   m_GdiSolidPen.Free;
   m_GdiBrush.Free;
+
+  for pnlPanel in m_lstTracks do
+    pnlPanel.Destroy;
+
+  m_lstTracks.Free;
 
   SetLength(m_DriverList, 0);
 end;
@@ -186,9 +192,11 @@ procedure TPlayerGUI.InitializeVariables;
 var
   nDriverIdx : Integer;
 begin
-  m_CasEngine  := TCasEngine.Create(Self, Handle);
-  m_CasDecoder := TCasDecoder.Create;
-  m_CasTrack   := nil;
+  m_CasEngine   := TCasEngine.Create(Self, Handle);
+  m_CasDecoder  := TCasDecoder.Create;
+  m_CasTrack    := nil;
+
+  m_lstTracks   := TList<TPanel>.Create;
 
   m_GdiGraphics := TGPGraphics.Create(0);
   m_GdiSolidPen := TGPPen.Create(0, 1);
@@ -283,7 +291,7 @@ begin
         AddTrackInfo(m_CasTrack);
       end;
 
-      Height := 150 + m_nLoadedTrackCount * 55 + 10 * BoolToInt(m_nLoadedTrackCount > 0);
+      Height := 150 + m_nLoadedTrackCount * 60 + 10 * BoolToInt(m_nLoadedTrackCount > 0);
     except
       m_bFileLoaded := False;
     end;
@@ -371,38 +379,68 @@ end;
 
 //==============================================================================
 procedure TPlayerGUI.UpdateProgressBar;
+var
+  CasTrack  : TCasTrack;
+  dProgress : Double;
+  nPanelIdx : Integer;
+  nTrackIdx : Integer;
 begin
   m_bBlockBufferPositionUpdate := True;
   tbProgress.Position          := Trunc(m_CasEngine.Progress*tbProgress.Max);
   m_bBlockBufferPositionUpdate := False;
+  CasTrack                     := nil;
+
+  for nPanelIdx := 0 to m_lstTracks.Count - 1 do
+  begin
+    if m_CasEngine.Database.GetTrackByID(StrToInt(String((m_lstTracks.Items[nPanelIdx] as TPanel).Name).SubString(3)), CasTrack) then
+    begin
+      dProgress := (m_CasEngine.Position - CasTrack.Position) / CasTrack.Size;
+
+      ((m_lstTracks.Items[nPanelIdx] as TPanel).Controls[1] as TAcrylicTrack).Position := dProgress;
+
+      if (dProgress > 0) and (dProgress <= 1) then
+        ((m_lstTracks.Items[nPanelIdx] as TPanel).Controls[1] as TAcrylicTrack).Invalidate;
+    end;
+  end;
 end;
 
 //==============================================================================
 procedure TPlayerGUI.AddTrackInfo(a_CasTrack : TCasTrack);
 var
-  btnPlay      : TAcrylicButton;
+  pnlTrack     : TPanel;
+  btnRemove    : TAcrylicButton;
   AcrylicTrack : TAcrylicTrack;
 begin
-  btnPlay              := TAcrylicButton.Create(Self);
-  btnPlay.Parent       := Self;
-  btnPlay.Align        := alNone;
-  btnPlay.Text         := 'Remove';
-  btnPlay.Name         := 'btn' + IntToStr(a_CasTrack.ID);
-  btnPlay.OnClick      := btnDeleteClick;
-  btnPlay.Width        := 60;
-  btnPlay.Height       := 50;
-  btnPlay.Left         := Self.Width - btnPlay.Width - 25;
-  btnPlay.Top          := m_nLoadedTrackCount * 55 + 145;
+  pnlTrack             := TPanel.Create(Self);
+  pnlTrack.Parent      := Self;
+  pnlTrack.BevelOuter  := bvNone;
+  pnlTrack.Align       := alNone;
+  pnlTrack.Caption     := '';
+  pnlTrack.Name        := 'pnl' + IntToStr(a_CasTrack.ID);
+  pnlTrack.Width       := Self.Width - 50;
+  pnlTrack.Height      := 55;
+  pnlTrack.Left        := 25;
+  pnlTrack.Top         := m_nLoadedTrackCount * 60 + 145;
 
-  AcrylicTrack         := TAcrylicTrack.Create(Self);
-  AcrylicTrack.Parent  := Self;
-  AcrylicTrack.Top     := m_nLoadedTrackCount * 55 + 145;
-  AcrylicTrack.Left    := 26;
-  AcrylicTrack.Width   := Self.Width - 110;
+  m_lstTracks.add(pnlTrack);
+
+  btnRemove            := TAcrylicButton.Create(pnlTrack);
+  btnRemove.Parent     := pnlTrack;
+  btnRemove.Align      := alRight;
+  btnRemove.Text       := 'Remove';
+  btnRemove.Name       := 'btnRemove_' + IntToStr(a_CasTrack.ID);
+  btnRemove.OnClick    := btnDeleteClick;
+  btnRemove.Width      := 60;
+  btnRemove.Height     := 50;
+
+  AcrylicTrack         := TAcrylicTrack.Create(pnlTrack);
+  AcrylicTrack.Parent  := pnlTrack;
+  AcrylicTrack.Align   := alLeft;
+  AcrylicTrack.Width   := pnlTrack.Width - 70;
   AcrylicTrack.Height  := 50;
   AcrylicTrack.OnClick := trackClick;
   AcrylicTrack.Text    := IntToStr(m_nLoadedTrackCount + 1) + ') ' + a_CasTrack.Title;
-  AcrylicTrack.Name    := 'track_' + IntToStr(a_CasTrack.ID);
+  AcrylicTrack.Name    := 'trkTrack_' + IntToStr(a_CasTrack.ID);
   AcrylicTrack.SetData(@m_CasTrack.RawData.Right, m_CasTrack.Size);
 
   Inc(m_nLoadedTrackCount);
@@ -413,15 +451,14 @@ procedure TPlayerGUI.btnDeleteClick(Sender : TObject);
 var
   CasTrack : TCasTrack;
 begin
-  if m_CasEngine.Database.GetTrackByID(StrToInt(String((Sender as TAcrylicButton).Name).SubString(3)), CasTrack) then
+  if m_CasEngine.Database.GetTrackByID(StrToInt(String((Sender as TAcrylicButton).Parent.Name).SubString(3)), CasTrack) then
   begin
     m_CasEngine.Playlist.RemoveTrack(CasTrack.ID);
     m_CasEngine.MainMixer.RemoveTrack(CasTrack.ID);
     CasTrack.Destroy;
   end;
 
-  FindComponent('track_' + String((Sender as TAcrylicButton).Name).SubString(3)).Destroy;
-  (Sender as TAcrylicButton).Destroy;
+  (Sender as TAcrylicButton).Parent.Destroy;
 end;
 
 //==============================================================================
@@ -429,9 +466,8 @@ procedure TPlayerGUI.trackClick(Sender : TObject);
 var
   CasTrack : TCasTrack;
 begin
-  if m_CasEngine.Database.GetTrackByID(StrToInt(String((Sender as TAcrylicTrack).Name).SubString(6)), CasTrack) then
+  if m_CasEngine.Database.GetTrackByID(StrToInt(String((Sender as TAcrylicTrack).Parent.Name).SubString(3)), CasTrack) then
     m_CasEngine.Position := CasTrack.Position;
-
 end;
 
 end.

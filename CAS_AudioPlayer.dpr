@@ -1,5 +1,7 @@
 program CAS_AudioPlayer;
 
+{$R 'images.res' 'images\images.rc'}
+
 uses
   Vcl.Forms,
   PlayerFormU   in 'src\PlayerFormU.pas',

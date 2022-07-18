@@ -87,6 +87,7 @@
         <VerInfo_Locale>1033</VerInfo_Locale>
         <DCC_ExeOutput>bin</DCC_ExeOutput>
         <DCC_DcuOutput>dcu</DCC_DcuOutput>
+        <BRCC_OutputDir>res</BRCC_OutputDir>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
@@ -102,6 +103,9 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
+        <RcCompile Include="images\images.rc">
+            <Form>images.res</Form>
+        </RcCompile>
         <DCCReference Include="src\PlayerFormU.pas"/>
         <DCCReference Include="src\AudioManagerU.pas"/>
         <DCCReference Include="deps\CasAudioEngine\src\CasEngineU.pas"/>

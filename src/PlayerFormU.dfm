@@ -38,7 +38,7 @@ object PlayerGUI: TPlayerGUI
     Top = 108
     Width = 282
     Height = 24
-    Max = 100
+    Max = 500
     ShowSelRange = False
     TabOrder = 1
     TickMarks = tmBoth
