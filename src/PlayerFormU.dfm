@@ -14,6 +14,7 @@ object PlayerGUI: TPlayerGUI
   OldCreateOrder = False
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  OnKeyDown = FormKeyDown
   OnPaint = FormPaint
   PixelsPerInch = 96
   TextHeight = 13
@@ -50,8 +51,8 @@ object PlayerGUI: TPlayerGUI
     Top = 50
     Width = 108
     Height = 21
+    Style = csDropDownList
     TabOrder = 2
-    Text = 'Select Output'
     OnChange = cbDriverChange
   end
   object tbSpeed: TTrackBar
@@ -76,6 +77,17 @@ object PlayerGUI: TPlayerGUI
     Width = 85
     Height = 53
     Text = ''
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    Alignment = aCenter
+    Color = claWhite
+    FontColor = claWhite
+    BackColor = x640F0F0F
+    BorderColor = x64070707
+    WithBorder = True
     OnClick = btnPlayClick
   end
   object btnPause: TAcrylicButton
@@ -84,6 +96,17 @@ object PlayerGUI: TPlayerGUI
     Width = 85
     Height = 53
     Text = ''
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    Alignment = aCenter
+    Color = claWhite
+    FontColor = claWhite
+    BackColor = x640F0F0F
+    BorderColor = x64070707
+    WithBorder = True
     OnClick = btnPauseClick
   end
   object btnStop: TAcrylicButton
@@ -92,6 +115,17 @@ object PlayerGUI: TPlayerGUI
     Width = 85
     Height = 53
     Text = ''
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    Alignment = aCenter
+    Color = claWhite
+    FontColor = claWhite
+    BackColor = x640F0F0F
+    BorderColor = x64070707
+    WithBorder = True
     OnClick = btnStopClick
   end
   object btnOpenFile: TAcrylicButton
@@ -100,6 +134,17 @@ object PlayerGUI: TPlayerGUI
     Width = 108
     Height = 24
     Text = 'Open File'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    Alignment = aCenter
+    Color = claWhite
+    FontColor = claWhite
+    BackColor = x640F0F0F
+    BorderColor = x64070707
+    WithBorder = True
     OnClick = btnOpenFileClick
   end
   object btnDriverControlPanel: TAcrylicButton
@@ -108,7 +153,36 @@ object PlayerGUI: TPlayerGUI
     Width = 108
     Height = 24
     Text = 'Driver Settings'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    Alignment = aCenter
+    Color = claWhite
+    FontColor = claWhite
+    BackColor = x640F0F0F
+    BorderColor = x64070707
+    WithBorder = True
     OnClick = btnDriverControlPanelClick
+  end
+  object lblTitle: TAcrylicLabel
+    Left = 26
+    Top = 8
+    Width = 126
+    Height = 17
+    Text = 'CAS Audio Player'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    Alignment = aLeft
+    Color = claWhite
+    FontColor = claWhite
+    BackColor = x50000000
+    BorderColor = x640F0F0F
+    WithBorder = False
   end
   object odOpenFile: TOpenDialog
     Options = [ofHideReadOnly, ofAllowMultiSelect, ofEnableSizing]

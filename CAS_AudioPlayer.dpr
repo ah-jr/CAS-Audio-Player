@@ -23,11 +23,13 @@ uses
   Asio          in 'deps\CasAudioEngine\Asio\Asio.pas',
 
   // Acrylic Form
+  AcrylicControlU    in 'deps\TAcrylicForm\src\AcrylicControlU.pas',
   AcrylicGhostPanelU in 'deps\TAcrylicForm\src\AcrylicGhostPanelU.pas',
   AcrylicFormU       in 'deps\TAcrylicForm\src\AcrylicFormU.pas',
   AcrylicButtonU     in 'deps\TAcrylicForm\src\AcrylicButtonU.pas',
   AcrylicLabelU      in 'deps\TAcrylicForm\src\AcrylicLabelU.pas',
   AcrylicTypesU      in 'deps\TAcrylicForm\src\AcrylicTypesU.pas',
+  AcrylicUtilsU      in 'deps\TAcrylicForm\src\AcrylicUtilsU.pas',
   AcrylicTrackU      in 'deps\TAcrylicForm\src\AcrylicTrackU.pas';
 
 

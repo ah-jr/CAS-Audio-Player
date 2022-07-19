@@ -119,11 +119,13 @@
         <DCCReference Include="deps\CasAudioEngine\src\CasUtilsU.pas"/>
         <DCCReference Include="deps\CasAudioEngine\Asio\AsioList.pas"/>
         <DCCReference Include="deps\CasAudioEngine\Asio\Asio.pas"/>
+        <DCCReference Include="deps\TAcrylicForm\src\AcrylicControlU.pas"/>
         <DCCReference Include="deps\TAcrylicForm\src\AcrylicGhostPanelU.pas"/>
         <DCCReference Include="deps\TAcrylicForm\src\AcrylicFormU.pas"/>
         <DCCReference Include="deps\TAcrylicForm\src\AcrylicButtonU.pas"/>
         <DCCReference Include="deps\TAcrylicForm\src\AcrylicLabelU.pas"/>
         <DCCReference Include="deps\TAcrylicForm\src\AcrylicTypesU.pas"/>
+        <DCCReference Include="deps\TAcrylicForm\src\AcrylicUtilsU.pas"/>
         <DCCReference Include="deps\TAcrylicForm\src\AcrylicTrackU.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
