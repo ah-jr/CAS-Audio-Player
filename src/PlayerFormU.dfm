@@ -71,10 +71,30 @@ object PlayerGUI: TPlayerGUI
     TickStyle = tsNone
     OnChange = tbSpeedChange
   end
-  object btnPlay: TAcrylicButton
-    Left = 142
+  object btnPrev: TAcrylicButton
+    Left = 144
     Top = 48
-    Width = 85
+    Width = 65
+    Height = 53
+    Text = ''
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    Alignment = aCenter
+    Color = claWhite
+    FontColor = claWhite
+    BackColor = x640F0F0F
+    BorderColor = x64070707
+    WithBorder = True
+    OnClick = btnPrevClick
+    OnDblClick = btnPrevDblClick
+  end
+  object btnPlay: TAcrylicButton
+    Left = 213
+    Top = 48
+    Width = 63
     Height = 53
     Text = ''
     Font.Charset = DEFAULT_CHARSET
@@ -90,10 +110,10 @@ object PlayerGUI: TPlayerGUI
     WithBorder = True
     OnClick = btnPlayClick
   end
-  object btnPause: TAcrylicButton
-    Left = 235
+  object btnNext: TAcrylicButton
+    Left = 280
     Top = 48
-    Width = 85
+    Width = 63
     Height = 53
     Text = ''
     Font.Charset = DEFAULT_CHARSET
@@ -107,26 +127,7 @@ object PlayerGUI: TPlayerGUI
     BackColor = x640F0F0F
     BorderColor = x64070707
     WithBorder = True
-    OnClick = btnPauseClick
-  end
-  object btnStop: TAcrylicButton
-    Left = 328
-    Top = 48
-    Width = 85
-    Height = 53
-    Text = ''
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -11
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    Alignment = aCenter
-    Color = claWhite
-    FontColor = claWhite
-    BackColor = x640F0F0F
-    BorderColor = x64070707
-    WithBorder = True
-    OnClick = btnStopClick
+    OnClick = btnNextClick
   end
   object btnOpenFile: TAcrylicButton
     Left = 26
@@ -183,6 +184,25 @@ object PlayerGUI: TPlayerGUI
     BackColor = x50000000
     BorderColor = x640F0F0F
     WithBorder = False
+  end
+  object btnStop: TAcrylicButton
+    Left = 347
+    Top = 48
+    Width = 63
+    Height = 53
+    Text = ''
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    Alignment = aCenter
+    Color = claWhite
+    FontColor = claWhite
+    BackColor = x640F0F0F
+    BorderColor = x64070707
+    WithBorder = True
+    OnClick = btnStopClick
   end
   object odOpenFile: TOpenDialog
     Options = [ofHideReadOnly, ofAllowMultiSelect, ofEnableSizing]

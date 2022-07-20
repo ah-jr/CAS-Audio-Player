@@ -2,6 +2,12 @@
 CAS AudioPlayer - PATCH NOTES 
 ==============================================================================
 
+v1.0:
+  New functionalities:		
+  - Next/previous button
+  - Visualization of waveform of the tracks being played.
+  - Buttons to navigate between tracks, clone and remove.
+
 v1.0b:
 
   - Rearranged project files.
