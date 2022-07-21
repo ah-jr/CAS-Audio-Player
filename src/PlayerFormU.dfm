@@ -4,8 +4,9 @@ object PlayerGUI: TPlayerGUI
   BorderStyle = bsNone
   Caption = 'TPlayerGUI'
   ClientHeight = 150
-  ClientWidth = 497
+  ClientWidth = 842
   Color = clBtnFace
+  TransparentColorValue = clFuchsia
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -186,7 +187,7 @@ object PlayerGUI: TPlayerGUI
     Alignment = aLeft
     Color = claWhite
     FontColor = claWhite
-    BackColor = x50000000
+    BackColor = x64000000
     BorderColor = x640F0F0F
     WithBorder = False
     WithBackground = True
@@ -229,6 +230,37 @@ object PlayerGUI: TPlayerGUI
     BorderColor = x64070707
     WithBorder = True
     WithBackground = True
+  end
+  object pnlBlurHint: TPanel
+    Left = 700
+    Top = 6
+    Width = 50
+    Height = 21
+    Hint = '545'
+    BevelOuter = bvNone
+    ParentShowHint = False
+    ShowHint = True
+    TabOrder = 12
+    object btnBlur: TAcrylicButton
+      Left = 0
+      Top = 0
+      Width = 50
+      Height = 21
+      Text = 'BLUR'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      Alignment = aCenter
+      Color = claWhite
+      FontColor = claWhite
+      BackColor = x640F0F0F
+      BorderColor = x64070707
+      WithBorder = True
+      WithBackground = True
+      OnClick = btnBlurClick
+    end
   end
   object odOpenFile: TOpenDialog
     Options = [ofHideReadOnly, ofAllowMultiSelect, ofEnableSizing]

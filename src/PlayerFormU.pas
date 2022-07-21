@@ -58,9 +58,11 @@ type
     btnNext               : TAcrylicButton;
     btnOpenFile           : TAcrylicButton;
     btnDriverControlPanel : TAcrylicButton;
+    btnStop               : TAcrylicButton;
+    btnBlur               : TAcrylicButton;
+    lblTime               : TAcrylicLabel;
     lblTitle              : TAcrylicLabel;
-    btnStop: TAcrylicButton;
-    lblTime: TAcrylicLabel;
+    pnlBlurHint           : TPanel;
 
 
     procedure FormCreate                 (Sender: TObject);
@@ -73,6 +75,7 @@ type
     procedure btnPlayClick               (Sender: TObject);
     procedure btnPrevClick               (Sender: TObject);
     procedure btnNextClick               (Sender: TObject);
+    procedure btnBlurClick               (Sender: TObject);
     procedure btnPrevDblClick            (Sender: TObject);
     procedure btnCloseClick              (Sender: TObject);
     procedure btnAddClick                (Sender: TObject);
@@ -83,6 +86,8 @@ type
     procedure tbVolumeChange             (Sender: TObject);
     procedure tbProgressChange           (Sender: TObject);
     procedure tbSpeedChange              (Sender: TObject);
+
+    procedure WMNCSize(var Msg: TWMSize); message WM_SIZE;
 
 
   private
@@ -104,7 +109,7 @@ type
     procedure AddTrackInfo(a_CasTrack : TCasTrack);
 
     procedure InitializeVariables;
-    procedure InitializeIcons;
+    procedure InitializeControls;
     procedure RecreateGdiObject;
     procedure ChangeEnabledObjects;
     procedure UpdateBufferPosition;
@@ -136,20 +141,24 @@ begin
   Inherited;
   Caption     := 'CAS Audio Player';
   Resizable   := False;
-  Color       := $000000;
+  BlurColor   := $000000;
+  BackColor   := $1F1F1F;
   WithBorder  := True;
-  BorderColor := $64FFFF;
+  BorderColor := $A064FFFF;
   BlurAmount  := 150;
   KeyPreview  := True;
 
+  Width := 1000;
+  Height := 800;
+
   InitializeVariables;
-  InitializeIcons;
+  InitializeControls;
 
   ChangeEnabledObjects;
 end;
 
 //==============================================================================
-procedure TPlayerGUI.InitializeIcons;
+procedure TPlayerGUI.InitializeControls;
 var
   pngImage : TPngImage;
 begin
@@ -168,6 +177,16 @@ begin
   pngImage := TPngImage.Create;
   pngImage.LoadFromResourceName(HInstance, 'btnStop');
   btnStop.Png := pngImage;
+
+  btnBlur.Enabled     := SupportBlur;
+  btnBlur.WithBorder  := True;
+  btnBlur.FontColor   := $FFFF8B64;
+  btnBlur.BorderColor := $1FFF8B64;
+
+  btnBlur.ShowHint     := True;
+  btnBlur.Hint         := 'Blur is available in Windows 10';
+  pnlBlurHint.ShowHint := True;
+  pnlBlurHint.Hint     := btnBlur.Hint;
 end;
 
 //==============================================================================
@@ -191,6 +210,16 @@ begin
 end;
 
 //==============================================================================
+procedure TPlayerGUI.WMNCSize(var Msg: TWMSize);
+const
+  c_bntBlurRight = 150;
+begin
+  inherited;
+
+  pnlBlurHint.Left := ClientWidth - pnlBlurHint.Width - c_bntBlurRight;
+end;
+
+//==============================================================================
 procedure TPlayerGUI.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
   if Key = VK_SPACE then
@@ -200,17 +229,23 @@ end;
 //==============================================================================
 procedure TPlayerGUI.FormPaint(Sender: TObject);
 begin
+  Inherited;
+
   RecreateGdiObject;
 
   // Make titlebar a bit darker:
-  m_GdiBrush.SetColor(MakeColor(80,
-                                GetRValue(clBlack),
-                                GetGValue(clBlack),
-                                GetBValue(clBlack)));
+  m_GdiBrush.SetColor(MakeColor(100, 0, 0, 0));
+  m_GdiGraphics.FillRectangle(m_GdiBrush, 1, 1, ClientWidth-2, 31);
 
-  m_GdiGraphics.FillRectangle(m_GdiBrush, 0, 0, ClientWidth, 32);
 
-  Inherited;
+  m_GdiSolidPen.SetColor(MakeColor(150, 50, 50, 50));
+  m_GdiGraphics.DrawRectangle(m_GdiSolidPen, 20, 140, ClientWidth - 40, ClientHeight - 160);
+
+  m_GdiSolidPen.SetColor(MakeColor(150, 35, 35, 35));
+  m_GdiGraphics.DrawRectangle(m_GdiSolidPen, 21, 141, ClientWidth - 42, ClientHeight - 162);
+
+  m_GdiBrush.SetColor(MakeColor(150, 20, 20, 20));
+  m_GdiGraphics.FillRectangle(m_GdiBrush, 22, 142, ClientWidth - 43, ClientHeight - 163);
 end;
 
 //==============================================================================
@@ -472,8 +507,8 @@ var
 begin
   nHeight := 150 + m_nLoadedTrackCount * 60 + 10 * BoolToInt(m_nLoadedTrackCount > 0);
 
-  if Height <> nHeight then
-    Height := nHeight;
+  //if Height <> nHeight then
+  //  Height := nHeight;
 end;
 
 //==============================================================================
@@ -487,7 +522,7 @@ begin
 
   for nPanelIdx := 0 to m_lstTracks.Count - 1 do
   begin
-    (m_lstTracks.Items[nPanelIdx] as TPanel).Top := nPanelIdx * 60 + 145;
+    (m_lstTracks.Items[nPanelIdx] as TPanel).Top := nPanelIdx * 110 + 145;
 
     if m_CasEngine.Database.GetTrackByID(StrToInt(String((m_lstTracks.Items[nPanelIdx] as TPanel).Name).SubString(3)), CasTrack) then
     begin
@@ -536,6 +571,12 @@ begin
 end;
 
 //==============================================================================
+procedure TPlayerGUI.btnBlurClick(Sender: TObject);
+begin
+  inherited;
+  WithBlur := not WithBlur;
+end;
+
 procedure TPlayerGUI.AddTrackInfo(a_CasTrack : TCasTrack);
 var
   pnlTrack     : TPanel;
@@ -545,6 +586,13 @@ var
   btnClose     : TAcrylicButton;
   AcrylicTrack : TAcrylicTrack;
   pngImage     : TPngImage;
+const
+  c_nPanelHeight   = 100;
+  c_nPanelOffset   = 25;
+  c_nFirstPanelTop = 145;
+  c_nPanelGap      = 10;
+  c_nButtonWidth   = 25;
+  c_nButtonHeight  = 25;
 begin
   //////////////////////////////////////////////////////////////////////////////
   // Track Panel
@@ -554,10 +602,10 @@ begin
   pnlTrack.Align       := alNone;
   pnlTrack.Caption     := '';
   pnlTrack.Name        := 'pnl' + IntToStr(a_CasTrack.ID);
-  pnlTrack.Width       := Self.Width - 50;
-  pnlTrack.Height      := 55;
-  pnlTrack.Left        := 25;
-  pnlTrack.Top         := m_nLoadedTrackCount * 60 + 145;
+  pnlTrack.Width       := Self.Width - 2 * c_nPanelOffset;
+  pnlTrack.Height      := c_nPanelHeight;
+  pnlTrack.Left        := c_nPanelOffset;
+  pnlTrack.Top         := m_nLoadedTrackCount * (c_nPanelGap + c_nPanelHeight) + c_nFirstPanelTop;
 
   m_lstTracks.Add(pnlTrack);
 
@@ -571,8 +619,8 @@ begin
   btnUp.Text           := '';
   btnUp.Name           := 'btnUp_' + IntToStr(a_CasTrack.ID);
   btnUp.OnClick        := btnUpClick;
-  btnUp.Width          := 25;
-  btnUp.Height         := 25;
+  btnUp.Width          := c_nButtonWidth;
+  btnUp.Height         := c_nButtonHeight;
   pngImage             := TPngImage.Create;
   pngImage.LoadFromResourceName(HInstance, 'btnUp');
   btnUp.Png            := pngImage;
@@ -587,8 +635,8 @@ begin
   btnDown.Text         := '';
   btnDown.Name         := 'btnDown_' + IntToStr(a_CasTrack.ID);
   btnDown.OnClick      := btnDownClick;
-  btnDown.Width        := 25;
-  btnDown.Height       := 25;
+  btnDown.Width        := c_nButtonWidth;
+  btnDown.Height       := c_nButtonHeight;
   pngImage             := TPngImage.Create;
   pngImage.LoadFromResourceName(HInstance, 'btnDown');
   btnDown.Png          := pngImage;
@@ -598,13 +646,13 @@ begin
   btnAdd               := TAcrylicButton.Create(pnlTrack);
   btnAdd.Parent        := pnlTrack;
   btnAdd.Align         := alNone;
-  btnAdd.Top           := 1;
+  btnAdd.Top           := 29;
   btnAdd.Left          := pnlTrack.Width - 30;
   btnAdd.Text          := '';
   btnAdd.Name          := 'btnAdd_' + IntToStr(a_CasTrack.ID);
   btnAdd.OnClick       := btnAddClick;
-  btnAdd.Width         := 25;
-  btnAdd.Height        := 25;
+  btnAdd.Width         := c_nButtonWidth;
+  btnAdd.Height        := c_nButtonHeight;
   pngImage             := TPngImage.Create;
   pngImage.LoadFromResourceName(HInstance, 'btnAdd');
   btnAdd.Png           := pngImage;
@@ -614,13 +662,13 @@ begin
   btnClose             := TAcrylicButton.Create(pnlTrack);
   btnClose.Parent      := pnlTrack;
   btnClose.Align       := alNone;
-  btnClose.Top         := 29;
+  btnClose.Top         := 1;
   btnClose.Left        := pnlTrack.Width - 30;
   btnClose.Text        := '';
   btnClose.Name        := 'btnClose_' + IntToStr(a_CasTrack.ID);
   btnClose.OnClick     := btnCloseClick;
-  btnClose.Width       := 25;
-  btnClose.Height      := 25;
+  btnClose.Width       := c_nButtonWidth;
+  btnClose.Height      := c_nButtonHeight;
   pngImage             := TPngImage.Create;
   pngImage.LoadFromResourceName(HInstance, 'btnClose');
   btnClose.Png         := pngImage;
@@ -629,9 +677,9 @@ begin
   // Track title and image
   AcrylicTrack         := TAcrylicTrack.Create(pnlTrack);
   AcrylicTrack.Parent  := pnlTrack;
-  AcrylicTrack.Align   := alLeft;
+  AcrylicTrack.Align   := alNone;
   AcrylicTrack.Width   := pnlTrack.Width - 61;
-  AcrylicTrack.Height  := 50;
+  AcrylicTrack.Height  := c_nPanelHeight;
   AcrylicTrack.OnClick := trackClick;
   AcrylicTrack.Text    := IntToStr(m_nLoadedTrackCount + 1) + ') ' + a_CasTrack.Title;
   AcrylicTrack.Name    := 'trkTrack_' + IntToStr(a_CasTrack.ID);
