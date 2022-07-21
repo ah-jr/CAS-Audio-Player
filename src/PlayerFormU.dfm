@@ -37,7 +37,7 @@ object PlayerGUI: TPlayerGUI
   object tbProgress: TTrackBar
     Left = 136
     Top = 108
-    Width = 282
+    Width = 207
     Height = 24
     Max = 500
     ShowSelRange = False
@@ -88,6 +88,7 @@ object PlayerGUI: TPlayerGUI
     BackColor = x640F0F0F
     BorderColor = x64070707
     WithBorder = True
+    WithBackground = True
     OnClick = btnPrevClick
     OnDblClick = btnPrevDblClick
   end
@@ -108,6 +109,7 @@ object PlayerGUI: TPlayerGUI
     BackColor = x640F0F0F
     BorderColor = x64070707
     WithBorder = True
+    WithBackground = True
     OnClick = btnPlayClick
   end
   object btnNext: TAcrylicButton
@@ -127,6 +129,7 @@ object PlayerGUI: TPlayerGUI
     BackColor = x640F0F0F
     BorderColor = x64070707
     WithBorder = True
+    WithBackground = True
     OnClick = btnNextClick
   end
   object btnOpenFile: TAcrylicButton
@@ -146,6 +149,7 @@ object PlayerGUI: TPlayerGUI
     BackColor = x640F0F0F
     BorderColor = x64070707
     WithBorder = True
+    WithBackground = True
     OnClick = btnOpenFileClick
   end
   object btnDriverControlPanel: TAcrylicButton
@@ -165,6 +169,7 @@ object PlayerGUI: TPlayerGUI
     BackColor = x640F0F0F
     BorderColor = x64070707
     WithBorder = True
+    WithBackground = True
     OnClick = btnDriverControlPanelClick
   end
   object lblTitle: TAcrylicLabel
@@ -184,6 +189,7 @@ object PlayerGUI: TPlayerGUI
     BackColor = x50000000
     BorderColor = x640F0F0F
     WithBorder = False
+    WithBackground = True
   end
   object btnStop: TAcrylicButton
     Left = 347
@@ -202,7 +208,27 @@ object PlayerGUI: TPlayerGUI
     BackColor = x640F0F0F
     BorderColor = x64070707
     WithBorder = True
+    WithBackground = True
     OnClick = btnStopClick
+  end
+  object lblTime: TAcrylicLabel
+    Left = 347
+    Top = 110
+    Width = 63
+    Height = 20
+    Text = '0:00/0:00'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    Alignment = aCenter
+    Color = claWhite
+    FontColor = claWhite
+    BackColor = x640F0F0F
+    BorderColor = x64070707
+    WithBorder = True
+    WithBackground = True
   end
   object odOpenFile: TOpenDialog
     Options = [ofHideReadOnly, ofAllowMultiSelect, ofEnableSizing]

@@ -60,6 +60,7 @@ type
     btnDriverControlPanel : TAcrylicButton;
     lblTitle              : TAcrylicLabel;
     btnStop: TAcrylicButton;
+    lblTime: TAcrylicLabel;
 
 
     procedure FormCreate                 (Sender: TObject);
@@ -450,6 +451,8 @@ begin
   m_bBlockBufferPositionUpdate := False;
   CasTrack                     := nil;
 
+  lblTime.Text := m_CasEngine.GetTime + '/' + m_CasEngine.GetDuration;
+
   for nPanelIdx := 0 to m_lstTracks.Count - 1 do
   begin
     if m_CasEngine.Database.GetTrackByID(StrToInt(String((m_lstTracks.Items[nPanelIdx] as TPanel).Name).SubString(3)), CasTrack) then
@@ -634,6 +637,7 @@ begin
   AcrylicTrack.Name    := 'trkTrack_' + IntToStr(a_CasTrack.ID);
   AcrylicTrack.SetData(@a_CasTrack.RawData.Right, a_CasTrack.Size);
 
+  lblTime.Text := m_CasEngine.GetTime + '/' + m_CasEngine.GetDuration;
   Inc(m_nLoadedTrackCount);
 end;
 
@@ -659,6 +663,7 @@ begin
     m_CasEngine.Stop;
 
   RearrangeTracks;
+  UpdateProgressBar;
   ChangeEnabledObjects;
 end;
 
@@ -676,6 +681,8 @@ begin
     m_CasEngine.AddTrackToPlaylist(NewTrack.ID, m_CasEngine.Length);
 
     AddTrackInfo(NewTrack);
+
+    UpdateProgressBar;
     UpdateFormSize;
   end;
 end;
