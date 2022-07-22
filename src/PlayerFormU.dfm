@@ -16,7 +16,6 @@ object PlayerGUI: TPlayerGUI
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown
-  OnPaint = FormPaint
   PixelsPerInch = 96
   TextHeight = 13
   object tbVolume: TTrackBar
@@ -190,7 +189,7 @@ object PlayerGUI: TPlayerGUI
     BackColor = x64000000
     BorderColor = x640F0F0F
     WithBorder = False
-    WithBackground = True
+    WithBackground = False
   end
   object btnStop: TAcrylicButton
     Left = 347
