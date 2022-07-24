@@ -3,7 +3,7 @@ object PlayerGUI: TPlayerGUI
   Top = 0
   BorderStyle = bsNone
   Caption = 'TPlayerGUI'
-  ClientHeight = 150
+  ClientHeight = 294
   ClientWidth = 842
   Color = clBtnFace
   TransparentColorValue = clFuchsia
@@ -18,22 +18,6 @@ object PlayerGUI: TPlayerGUI
   OnKeyDown = FormKeyDown
   PixelsPerInch = 96
   TextHeight = 13
-  object tbVolume: TTrackBar
-    Left = 421
-    Top = 43
-    Width = 34
-    Height = 92
-    Hint = 'Output Level'
-    Max = 100
-    Orientation = trVertical
-    ParentShowHint = False
-    ShowHint = True
-    ShowSelRange = False
-    TabOrder = 0
-    TickMarks = tmBoth
-    TickStyle = tsNone
-    OnChange = tbVolumeChange
-  end
   object tbProgress: TTrackBar
     Left = 136
     Top = 108
@@ -41,7 +25,7 @@ object PlayerGUI: TPlayerGUI
     Height = 24
     Max = 500
     ShowSelRange = False
-    TabOrder = 1
+    TabOrder = 0
     TickMarks = tmBoth
     TickStyle = tsNone
     OnChange = tbProgressChange
@@ -52,24 +36,8 @@ object PlayerGUI: TPlayerGUI
     Width = 108
     Height = 21
     Style = csDropDownList
-    TabOrder = 2
+    TabOrder = 1
     OnChange = cbDriverChange
-  end
-  object tbSpeed: TTrackBar
-    Left = 449
-    Top = 43
-    Width = 34
-    Height = 92
-    Hint = 'Speed: 1x'
-    Orientation = trVertical
-    ParentShowHint = False
-    Position = 5
-    ShowHint = True
-    ShowSelRange = False
-    TabOrder = 3
-    TickMarks = tmBoth
-    TickStyle = tsNone
-    OnChange = tbSpeedChange
   end
   object btnPrev: TAcrylicButton
     Left = 144
@@ -239,7 +207,7 @@ object PlayerGUI: TPlayerGUI
     BevelOuter = bvNone
     ParentShowHint = False
     ShowHint = True
-    TabOrder = 12
+    TabOrder = 10
     object btnBlur: TAcrylicButton
       Left = 0
       Top = 0
@@ -260,6 +228,97 @@ object PlayerGUI: TPlayerGUI
       WithBackground = True
       OnClick = btnBlurClick
     end
+  end
+  object sbTracks: TAcrylicScrollBox
+    Left = 26
+    Top = 150
+    Width = 445
+    Height = 121
+    Color = 2039583
+    TabOrder = 11
+    Ghost = False
+  end
+  object knbLevel: TAcrylicKnob
+    Left = 426
+    Top = 56
+    Width = 30
+    Height = 30
+    Text = ''
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    Alignment = aCenter
+    Color = claWhite
+    FontColor = claWhite
+    BackColor = x640F0F0F
+    BorderColor = x64070707
+    WithBorder = False
+    WithBackground = False
+    KnobColor = xFFFF8B64
+    Level = 0.500000000000000000
+    OnChange = knbLevelChange
+  end
+  object knbSpeed: TAcrylicKnob
+    Left = 426
+    Top = 103
+    Width = 30
+    Height = 30
+    Text = ''
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    Alignment = aCenter
+    Color = claWhite
+    FontColor = claWhite
+    BackColor = x640F0F0F
+    BorderColor = x64070707
+    WithBorder = False
+    WithBackground = False
+    KnobColor = xFFFF8B64
+    Level = 0.500000000000000000
+    OnChange = knbSpeedChange
+  end
+  object lblVolume: TAcrylicLabel
+    Left = 420
+    Top = 40
+    Width = 42
+    Height = 16
+    Text = 'Volume'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    Alignment = aCenter
+    Color = claWhite
+    FontColor = claWhite
+    BackColor = x640F0F0F
+    BorderColor = x64070707
+    WithBorder = False
+    WithBackground = False
+  end
+  object lblPitch: TAcrylicLabel
+    Left = 420
+    Top = 87
+    Width = 42
+    Height = 16
+    Text = 'Pitch'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    Alignment = aCenter
+    Color = claWhite
+    FontColor = claWhite
+    BackColor = x640F0F0F
+    BorderColor = x64070707
+    WithBorder = False
+    WithBackground = False
   end
   object odOpenFile: TOpenDialog
     Options = [ofHideReadOnly, ofAllowMultiSelect, ofEnableSizing]

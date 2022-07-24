@@ -45,14 +45,14 @@ uses
   AcrylicTrackU,
   AcrylicLabelU,
   AcrylicGhostPanelU,
-  AcrylicControlU;
+  AcrylicControlU,
+  AcrylicScrollBoxU,
+  AcrylicKnobU;
 
 type
   TPlayerGUI = class(TAcrylicForm)
     odOpenFile            : TOpenDialog;
-    tbVolume              : TTrackBar;
     tbProgress            : TTrackBar;
-    tbSpeed               : TTrackBar;
     cbDriver              : TComboBox;
     btnPrev               : TAcrylicButton;
     btnPlay               : TAcrylicButton;
@@ -63,7 +63,13 @@ type
     btnBlur               : TAcrylicButton;
     lblTime               : TAcrylicLabel;
     lblTitle              : TAcrylicLabel;
+    lblVolume             : TAcrylicLabel;
+    lblPitch              : TAcrylicLabel;
+    sbTracks              : TAcrylicScrollBox;
+    knbLevel              : TAcrylicKnob;
+    knbSpeed              : TAcrylicKnob;
     pnlBlurHint           : TPanel;
+
 
 
     procedure FormCreate                 (Sender: TObject);
@@ -85,9 +91,9 @@ type
     procedure trackClick                 (Sender: TObject);
     procedure trackWheelUp               (Sender: TObject; Shift: TShiftState; MousePos: TPoint; var Handled: Boolean);
     procedure trackWheelDown             (Sender: TObject; Shift: TShiftState; MousePos: TPoint; var Handled: Boolean);
-    procedure tbVolumeChange             (Sender: TObject);
     procedure tbProgressChange           (Sender: TObject);
-    procedure tbSpeedChange              (Sender: TObject);
+    procedure knbLevelChange             (Sender: TObject);
+    procedure knbSpeedChange             (Sender: TObject);
 
     procedure WMNCSize(var Message: TWMSize); message WM_SIZE;
 
@@ -111,14 +117,13 @@ type
     procedure UpdateBufferPosition;
     procedure UpdateProgressBar;
     procedure RearrangeTracks;
-    procedure UpdateFormSize;
     procedure SwitchTracks(a_nTrack1, a_nTrack2 : Integer);
 end;
 
 const
   c_nPanelHeight   = 75;
-  c_nPanelOffset   = 25;
-  c_nFirstPanelTop = 145;
+  c_nPanelOffset   = 3;
+  c_nFirstPanelTop = 3;
   c_nPanelGap      = 10;
   c_nButtonWidth   = 25;
   c_nButtonHeight  = 25;
@@ -229,18 +234,21 @@ begin
 
   pnlBlurHint.Left := ClientWidth - pnlBlurHint.Width - c_nBntBlurRight;
 
+  sbTracks.Width  := ClientWidth  - 50;
+  sbTracks.Height := ClientHeight - 170;
+
   if (m_lstTracks <> nil) then
   begin
     for nIndex := 0 to m_lstTracks.Count - 1 do
     begin
-      (m_lstTracks.Items[nIndex] as TAcrylicGhostPanel).Width := Self.Width - 2 * c_nPanelOffset;
+      (m_lstTracks.Items[nIndex] as TAcrylicGhostPanel).Width := sbTracks.ScrollPanel.Width - 2 * c_nPanelOffset;
 
-      (m_lstTracks.Items[nIndex] as TAcrylicGhostPanel).Controls[0].Left := Self.Width - 2 * c_nPanelOffset - c_nButtonRight2;
-      (m_lstTracks.Items[nIndex] as TAcrylicGhostPanel).Controls[1].Left := Self.Width - 2 * c_nPanelOffset - c_nButtonRight2;
-      (m_lstTracks.Items[nIndex] as TAcrylicGhostPanel).Controls[2].Left := Self.Width - 2 * c_nPanelOffset - c_nButtonRight1;
-      (m_lstTracks.Items[nIndex] as TAcrylicGhostPanel).Controls[3].Left := Self.Width - 2 * c_nPanelOffset - c_nButtonRight1;
+      (m_lstTracks.Items[nIndex] as TAcrylicGhostPanel).Controls[0].Left := sbTracks.ScrollPanel.Width - 2 * c_nPanelOffset - c_nButtonRight2;
+      (m_lstTracks.Items[nIndex] as TAcrylicGhostPanel).Controls[1].Left := sbTracks.ScrollPanel.Width - 2 * c_nPanelOffset - c_nButtonRight2;
+      (m_lstTracks.Items[nIndex] as TAcrylicGhostPanel).Controls[2].Left := sbTracks.ScrollPanel.Width - 2 * c_nPanelOffset - c_nButtonRight1;
+      (m_lstTracks.Items[nIndex] as TAcrylicGhostPanel).Controls[3].Left := sbTracks.ScrollPanel.Width - 2 * c_nPanelOffset - c_nButtonRight1;
 
-      (m_lstTracks.Items[nIndex] as TAcrylicGhostPanel).Controls[4].Width := Self.Width - 2 * c_nPanelOffset - c_nTrackOffset;
+      (m_lstTracks.Items[nIndex] as TAcrylicGhostPanel).Controls[4].Width := sbTracks.ScrollPanel.Width - 2 * c_nPanelOffset - c_nTrackOffset;
     end;
   end;
 end;
@@ -262,7 +270,9 @@ begin
 
   m_lstTracks   := TList<TAcrylicGhostPanel>.Create;
 
-  tbVolume.Position   := 30;
+  knbLevel.Level := 0.7;
+  knbSpeed.Level := 0.5;
+
   m_nLoadedTrackCount := 0;
 
   m_bBlockBufferPositionUpdate := False;
@@ -335,8 +345,6 @@ begin
 
         AddTrackInfo(CasTrack);
       end;
-
-      UpdateFormSize;
     finally
     end;
   end;
@@ -416,33 +424,15 @@ begin
 end;
 
 //==============================================================================
-procedure TPlayerGUI.tbVolumeChange(Sender: TObject);
+procedure TPlayerGUI.knbLevelChange(Sender: TObject);
 begin
-  m_CasEngine.Level := (tbVolume.Max - tbVolume.Position) / tbVolume.Max;
+  m_CasEngine.Level := knbLevel.Level;
 end;
 
 //==============================================================================
-procedure TPlayerGUI.tbSpeedChange(Sender: TObject);
-var
-  dSpeed : Double;
+procedure TPlayerGUI.knbSpeedChange(Sender: TObject);
 begin
-  case tbSpeed.Position of
-    10: dSpeed := 0.1;
-    9:  dSpeed := 0.3;
-    8:  dSpeed := 0.5;
-    7:  dSpeed := 0.75;
-    6:  dSpeed := 0.9;
-    5:  dSpeed := 1;
-    4:  dSpeed := 1.2;
-    3:  dSpeed := 1.5;
-    2:  dSpeed := 2;
-    1:  dSpeed := 3;
-    0:  dSpeed := 5;
-  else  dSpeed := 1;
-  end;
-
-  tbSpeed.Hint := 'Speed: ' + FloatToStr(dSpeed) + 'x';
-  m_CasEngine.Playlist.Speed := dSpeed;
+  m_CasEngine.Playlist.Speed := 2 * knbSpeed.Level;
 end;
 
 //==============================================================================
@@ -490,17 +480,6 @@ begin
 end;
 
 //==============================================================================
-procedure TPlayerGUI.UpdateFormSize;
-//var
-//  nHeight : Integer;
-begin
-//  nHeight := 150 + m_nLoadedTrackCount * 60 + 10 * BoolToInt(m_nLoadedTrackCount > 0);
-//
-//  if Height <> nHeight then
-//    Height := nHeight;
-end;
-
-//==============================================================================
 procedure TPlayerGUI.RearrangeTracks;
 var
   nPanelIdx   : Integer;
@@ -521,8 +500,6 @@ begin
       ((m_lstTracks.Items[nPanelIdx] as TAcrylicGhostPanel).Controls[4] as TAcrylicTrack).Text := IntToStr(nPanelIdx + 1) + ') ' + CasTrack.Title;
     end;
   end;
-
-  UpdateFormSize;
 end;
 
 //==============================================================================
@@ -584,11 +561,12 @@ begin
   pnlTrack.Align       := alNone;
   pnlTrack.Caption     := '';
   pnlTrack.Name        := 'pnl' + IntToStr(a_CasTrack.ID);
-  pnlTrack.Width       := Self.Width - 2 * c_nPanelOffset;
+  pnlTrack.Width       := sbTracks.ScrollPanel.Width - 2 * c_nPanelOffset;
   pnlTrack.Height      := c_nPanelHeight;
   pnlTrack.Left        := c_nPanelOffset;
   pnlTrack.Top         := m_nLoadedTrackCount * (c_nPanelGap + c_nPanelHeight) + c_nFirstPanelTop;
 
+  sbTracks.AddControl(pnlTrack);
   m_lstTracks.Add(pnlTrack);
 
   //////////////////////////////////////////////////////////////////////////////
@@ -715,7 +693,6 @@ begin
     AddTrackInfo(NewTrack);
 
     UpdateProgressBar;
-    UpdateFormSize;
   end;
 end;
 
@@ -755,15 +732,27 @@ procedure TPlayerGUI.trackWheelUp(Sender: TObject; Shift: TShiftState; MousePos:
 var
   ptMouse : TPoint;
   nTrack  : Integer;
+  nDist   : Integer;
 begin
-  nTrack := m_lstTracks.IndexOf((Sender as TAcrylicTrack).Parent as TAcrylicGhostPanel);
-
-  SwitchTracks(nTrack, nTrack - 1);
-
-  if nTrack > 0 then
+  if ssShift in Shift then
   begin
-    ptMouse := Mouse.CursorPos;
-    SetCursorPos(ptMouse.X, ptMouse.Y - (c_nPanelGap + c_nPanelHeight));
+    nTrack  := m_lstTracks.IndexOf((Sender as TAcrylicTrack).Parent as TAcrylicGhostPanel);
+    nDist   := c_nPanelGap + c_nPanelHeight;
+
+    SwitchTracks(nTrack, nTrack - 1);
+
+    GetCursorPos(ptMouse);
+    ptMouse := ScreenToClient(ptMouse);
+
+    if (ptMouse.Y - nDist) < (sbTracks.Top) then
+    begin
+      sbTracks.Scroll(nDist);
+    end
+    else if nTrack > 0 then
+    begin
+      ptMouse := Mouse.CursorPos;
+      SetCursorPos(ptMouse.X, ptMouse.Y - nDist);
+    end;
   end;
 end;
 
@@ -772,15 +761,27 @@ procedure TPlayerGUI.trackWheelDown(Sender: TObject; Shift: TShiftState; MousePo
 var
   ptMouse : TPoint;
   nTrack  : Integer;
+  nDist   : Integer;
 begin
-  nTrack := m_lstTracks.IndexOf((Sender as TAcrylicTrack).Parent as TAcrylicGhostPanel);
-
-  SwitchTracks(nTrack, nTrack + 1);
-
-  if nTrack < m_lstTracks.Count - 1 then
+  if ssShift in Shift then
   begin
-    ptMouse := Mouse.CursorPos;
-    SetCursorPos(ptMouse.X, ptMouse.Y + (c_nPanelGap + c_nPanelHeight));
+    nTrack  := m_lstTracks.IndexOf((Sender as TAcrylicTrack).Parent as TAcrylicGhostPanel);
+    nDist   := c_nPanelGap + c_nPanelHeight;
+
+    SwitchTracks(nTrack, nTrack + 1);
+
+    GetCursorPos(ptMouse);
+    ptMouse := ScreenToClient(ptMouse);
+
+    if (ptMouse.Y + nDist) > (sbTracks.Top + sbTracks.Height) then
+    begin
+      sbTracks.Scroll(-nDist);
+    end
+    else if nTrack < m_lstTracks.Count - 1 then
+    begin
+      ptMouse := Mouse.CursorPos;
+      SetCursorPos(ptMouse.X, ptMouse.Y + nDist);
+    end;
   end;
 end;
 

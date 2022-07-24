@@ -25,12 +25,14 @@ uses
   // Acrylic Form
   AcrylicControlU    in 'deps\TAcrylicForm\src\AcrylicControlU.pas',
   AcrylicGhostPanelU in 'deps\TAcrylicForm\src\AcrylicGhostPanelU.pas',
+  AcrylicScrollBoxU  in 'deps\TAcrylicForm\src\AcrylicScrollBoxU.pas',
   AcrylicFormU       in 'deps\TAcrylicForm\src\AcrylicFormU.pas',
   AcrylicButtonU     in 'deps\TAcrylicForm\src\AcrylicButtonU.pas',
   AcrylicLabelU      in 'deps\TAcrylicForm\src\AcrylicLabelU.pas',
   AcrylicTypesU      in 'deps\TAcrylicForm\src\AcrylicTypesU.pas',
   AcrylicUtilsU      in 'deps\TAcrylicForm\src\AcrylicUtilsU.pas',
-  AcrylicTrackU      in 'deps\TAcrylicForm\src\AcrylicTrackU.pas';
+  AcrylicTrackU      in 'deps\TAcrylicForm\src\AcrylicTrackU.pas',
+  AcrylicKnobU       in 'deps\TAcrylicForm\src\AcrylicKnobU.pas';
 
 
 {$R *.res}
