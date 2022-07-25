@@ -320,6 +320,25 @@ object PlayerGUI: TPlayerGUI
     WithBorder = False
     WithBackground = False
   end
+  object lblLoading: TAcrylicLabel
+    Left = 158
+    Top = 8
+    Width = 126
+    Height = 17
+    Text = 'Loading files...'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    Alignment = aLeft
+    Color = claWhite
+    FontColor = claWhite
+    BackColor = x64000000
+    BorderColor = x640F0F0F
+    WithBorder = False
+    WithBackground = False
+  end
   object odOpenFile: TOpenDialog
     Options = [ofHideReadOnly, ofAllowMultiSelect, ofEnableSizing]
     Left = 64

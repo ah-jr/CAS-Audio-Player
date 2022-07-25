@@ -65,11 +65,11 @@ type
     lblTitle              : TAcrylicLabel;
     lblVolume             : TAcrylicLabel;
     lblPitch              : TAcrylicLabel;
+    lblLoading            : TAcrylicLabel;
     sbTracks              : TAcrylicScrollBox;
     knbLevel              : TAcrylicKnob;
     knbSpeed              : TAcrylicKnob;
     pnlBlurHint           : TPanel;
-
 
 
     procedure FormCreate                 (Sender: TObject);
@@ -108,6 +108,7 @@ type
     m_lstTracks                  : TList<TAcrylicGhostPanel>;
 
     procedure EngineNotification(var MsgRec: TMessage); message CM_NotifyOwner;
+    procedure DecodeReady       (var MsgRec: TMessage); message CM_NotifyDecode;
 
     procedure AddTrackInfo(a_CasTrack : TCasTrack);
 
@@ -117,7 +118,7 @@ type
     procedure UpdateBufferPosition;
     procedure UpdateProgressBar;
     procedure RearrangeTracks;
-    procedure SwitchTracks(a_nTrack1, a_nTrack2 : Integer);
+    procedure SwapTracks(a_nTrack1, a_nTrack2 : Integer);
 end;
 
 const
@@ -202,6 +203,9 @@ begin
   btnBlur.WithBorder  := True;
   btnBlur.FontColor   := $FFFF8B64;
   btnBlur.BorderColor := $1FFF8B64;
+
+  lblLoading.FontColor := $FFFF8B64;
+  lblLoading.Visible   := False;
 
   btnBlur.ShowHint     := True;
   btnBlur.Hint         := 'Blur is available in Windows 10';
@@ -299,6 +303,25 @@ begin
 end;
 
 //==============================================================================
+procedure TPlayerGUI.DecodeReady(var MsgRec: TMessage);
+var
+  CasTrack : TCasTrack;
+begin
+  for CasTrack in m_CasDecoder.Tracks do
+  begin
+    CasTrack.Level := 0.7;
+    CasTrack.ID    := m_CasEngine.GenerateID;
+    m_CasEngine.AddTrack(CasTrack, 0);
+    m_CasEngine.AddTrackToPlaylist(CasTrack.ID, m_CasEngine.Length);
+    AddTrackInfo(CasTrack);
+  end;
+
+  lblLoading.Visible := False;
+  m_CasDecoder.Tracks.Clear;
+  ChangeEnabledObjects;
+end;
+
+//==============================================================================
 procedure TPlayerGUI.ChangeEnabledObjects;
 begin
   btnDriverControlPanel.Enabled := (m_CasEngine.Ready);
@@ -325,31 +348,16 @@ end;
 
 //==============================================================================
 procedure TPlayerGUI.btnOpenFileClick(Sender: TObject);
-var
-  dSampleRate : Double;
-  strFileName : String;
-  CasTrack    : TCasTrack;
 begin
   if odOpenFile.Execute then
   begin
     try
-      dSampleRate := m_CasEngine.SampleRate;
+      m_CasDecoder.AsyncDecodeFile(Handle, odOpenFile.Files, m_CasEngine.SampleRate);
 
-      for strFileName in odOpenFile.Files do
-      begin
-        CasTrack       := m_CasDecoder.DecodeFile(strFileName, dSampleRate);
-        CasTrack.Level := 0.7;
-        CasTrack.ID    := m_CasEngine.GenerateID;
-        m_CasEngine.AddTrack(CasTrack, 0);
-        m_CasEngine.AddTrackToPlaylist(CasTrack.ID, m_CasEngine.Length);
-
-        AddTrackInfo(CasTrack);
-      end;
+      lblLoading.Visible := True;
     finally
     end;
   end;
-
-  ChangeEnabledObjects;
 end;
 
 //==============================================================================
@@ -503,7 +511,7 @@ begin
 end;
 
 //==============================================================================
-procedure TPlayerGUI.SwitchTracks(a_nTrack1, a_nTrack2 : Integer);
+procedure TPlayerGUI.SwapTracks(a_nTrack1, a_nTrack2 : Integer);
 var
   pnlTrack1 : TAcrylicGhostPanel;
   pnlTrack2 : TAcrylicGhostPanel;
@@ -703,7 +711,7 @@ var
 begin
   nTrack := m_lstTracks.IndexOf((Sender as TAcrylicButton).Parent as TAcrylicGhostPanel);
 
-  SwitchTracks(nTrack, nTrack - 1);
+  SwapTracks(nTrack, nTrack - 1);
 end;
 
 //==============================================================================
@@ -713,7 +721,7 @@ var
 begin
   nTrack := m_lstTracks.IndexOf((Sender as TAcrylicButton).Parent as TAcrylicGhostPanel);
 
-  SwitchTracks(nTrack, nTrack + 1);
+  SwapTracks(nTrack, nTrack + 1);
 end;
 
 //==============================================================================
@@ -739,7 +747,7 @@ begin
     nTrack  := m_lstTracks.IndexOf((Sender as TAcrylicTrack).Parent as TAcrylicGhostPanel);
     nDist   := c_nPanelGap + c_nPanelHeight;
 
-    SwitchTracks(nTrack, nTrack - 1);
+    SwapTracks(nTrack, nTrack - 1);
 
     GetCursorPos(ptMouse);
     ptMouse := ScreenToClient(ptMouse);
@@ -768,7 +776,7 @@ begin
     nTrack  := m_lstTracks.IndexOf((Sender as TAcrylicTrack).Parent as TAcrylicGhostPanel);
     nDist   := c_nPanelGap + c_nPanelHeight;
 
-    SwitchTracks(nTrack, nTrack + 1);
+    SwapTracks(nTrack, nTrack + 1);
 
     GetCursorPos(ptMouse);
     ptMouse := ScreenToClient(ptMouse);
