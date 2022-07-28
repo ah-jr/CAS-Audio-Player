@@ -345,12 +345,18 @@ end;
 procedure TPlayerGUI.cbDriverChange(Sender: TObject);
 var
   dtDriverType : TDriverType;
+  pngImage     : TPngImage;
 begin
   if cbDriver.ItemIndex = 0
     then dtDriverType := dtDirectSound
     else dtDriverType := dtASIO;
 
   m_CasEngine.ChangeDriver(dtDriverType, cbDriver.ItemIndex - 1);
+  m_CasEngine.AsyncUpdate := dtDriverType = dtDirectSound;
+
+  pngImage    := TPngImage.Create;
+  pngImage.LoadFromResourceName(HInstance, 'btnPlay');
+  btnPlay.Png := pngImage;
 
   ChangeEnabledObjects;
 end;
@@ -738,8 +744,7 @@ procedure TPlayerGUI.trackClick(Sender : TObject);
 var
   CasTrack : TCasTrack;
 begin
-  if m_CasEngine.Database.GetTrackByID(StrToInt(String((Sender as TAcrylicTrack).Parent.Name).SubString(3)), CasTrack) then
-    m_CasEngine.Position := CasTrack.Position;
+  m_CasEngine.GoToTrack(StrToInt(String((Sender as TAcrylicTrack).Parent.Name).SubString(3)));
 
   UpdateProgressBar;
 end;
