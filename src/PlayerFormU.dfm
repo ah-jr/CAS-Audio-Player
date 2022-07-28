@@ -234,9 +234,12 @@ object PlayerGUI: TPlayerGUI
     Top = 150
     Width = 445
     Height = 121
-    Color = 2039583
+    Color = x001F1F1F
     TabOrder = 11
     Ghost = False
+    Colored = False
+    Backcolor = 2039583
+    ScrollColor = x00FFFFFF
   end
   object knbLevel: TAcrylicKnob
     Left = 426

@@ -145,6 +145,7 @@ uses
   GDIPUTIL,
   Vcl.Imaging.pngimage,
   CasUtilsU,
+  CasTypesU,
   AcrylicUtilsU;
 
 {$R *.dfm}
@@ -283,10 +284,12 @@ begin
 
   SetLength(m_DriverList, 0);
   ListAsioDrivers(m_DriverList);
+  cbDriver.Items.Add('DirectSound');
+
   for nDriverIdx := Low(m_DriverList) to High(m_DriverList) do
     cbDriver.Items.Add(String(m_DriverList[nDriverIdx].name));
 
-  cbDriver.ItemIndex := High(m_DriverList);
+  cbDriver.ItemIndex := 0;
   cbDriverChange(cbDriver);
 end;
 
@@ -324,11 +327,11 @@ end;
 //==============================================================================
 procedure TPlayerGUI.ChangeEnabledObjects;
 begin
-  btnDriverControlPanel.Enabled := (m_CasEngine.Ready);
+  btnDriverControlPanel.Enabled := (m_CasEngine.Ready) and
+                                   (m_CasEngine.DriverType = dtASIO);
   btnOpenFile.Enabled           := (m_CasEngine.Ready);
 
-  btnPlay.Enabled               := (m_CasEngine.Ready)       and
-                                   (m_CasEngine.BuffersOn)   and
+  btnPlay.Enabled               := (m_CasEngine.Ready) and
                                    (m_nLoadedTrackCount > 0);
 
   btnStop.Enabled               := (m_nLoadedTrackCount > 0);
@@ -340,8 +343,14 @@ end;
 
 //==============================================================================
 procedure TPlayerGUI.cbDriverChange(Sender: TObject);
+var
+  dtDriverType : TDriverType;
 begin
-  m_CasEngine.ChangeDriver(cbDriver.ItemIndex);
+  if cbDriver.ItemIndex = 0
+    then dtDriverType := dtDirectSound
+    else dtDriverType := dtASIO;
+
+  m_CasEngine.ChangeDriver(dtDriverType, cbDriver.ItemIndex - 1);
 
   ChangeEnabledObjects;
 end;
@@ -364,7 +373,7 @@ end;
 procedure TPlayerGUI.btnDriverControlPanelClick(Sender: TObject);
 begin
   if m_CasEngine.Ready then
-    m_CasEngine.AsioDriver.ControlPanel;
+    m_CasEngine.ControlPanel;
 end;
 
 //==============================================================================

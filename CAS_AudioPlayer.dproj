@@ -109,10 +109,14 @@
         <DCCReference Include="src\PlayerFormU.pas"/>
         <DCCReference Include="src\AudioManagerU.pas"/>
         <DCCReference Include="deps\CasAudioEngine\src\CasEngineU.pas"/>
+        <DCCReference Include="deps\CasAudioEngine\src\CasAsioU.pas"/>
+        <DCCReference Include="deps\CasAudioEngine\src\CasDirectSoundU.pas"/>
+        <DCCReference Include="deps\CasAudioEngine\src\CasDsThreadU.pas"/>
         <DCCReference Include="deps\CasAudioEngine\src\CasTrackU.pas"/>
         <DCCReference Include="deps\CasAudioEngine\src\CasMixerU.pas"/>
         <DCCReference Include="deps\CasAudioEngine\src\CasPlaylistU.pas"/>
         <DCCReference Include="deps\CasAudioEngine\src\CasConstantsU.pas"/>
+        <DCCReference Include="deps\CasAudioEngine\src\CasTypesU.pas"/>
         <DCCReference Include="deps\CasAudioEngine\src\CasDecoderU.pas"/>
         <DCCReference Include="deps\CasAudioEngine\src\CasDatabaseU.pas"/>
         <DCCReference Include="deps\CasAudioEngine\src\CasBasicFxU.pas"/>
@@ -121,6 +125,7 @@
         <DCCReference Include="deps\CasAudioEngine\Asio\Asio.pas"/>
         <DCCReference Include="deps\TAcrylicForm\src\AcrylicControlU.pas"/>
         <DCCReference Include="deps\TAcrylicForm\src\AcrylicGhostPanelU.pas"/>
+        <DCCReference Include="deps\TAcrylicForm\src\AcrylicFrameU.pas"/>
         <DCCReference Include="deps\TAcrylicForm\src\AcrylicScrollBoxU.pas"/>
         <DCCReference Include="deps\TAcrylicForm\src\AcrylicFormU.pas"/>
         <DCCReference Include="deps\TAcrylicForm\src\AcrylicButtonU.pas"/>
