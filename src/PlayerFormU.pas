@@ -741,11 +741,8 @@ end;
 
 //==============================================================================
 procedure TPlayerGUI.trackClick(Sender : TObject);
-var
-  CasTrack : TCasTrack;
 begin
   m_CasEngine.GoToTrack(StrToInt(String((Sender as TAcrylicTrack).Parent.Name).SubString(3)));
-
   UpdateProgressBar;
 end;
 
