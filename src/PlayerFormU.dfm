@@ -18,25 +18,13 @@ object PlayerGUI: TPlayerGUI
   OnKeyDown = FormKeyDown
   PixelsPerInch = 96
   TextHeight = 13
-  object tbProgress: TTrackBar
-    Left = 136
-    Top = 108
-    Width = 207
-    Height = 24
-    Max = 500
-    ShowSelRange = False
-    TabOrder = 0
-    TickMarks = tmBoth
-    TickStyle = tsNone
-    OnChange = tbProgressChange
-  end
   object cbDriver: TComboBox
     Left = 26
     Top = 50
     Width = 108
     Height = 21
     Style = csDropDownList
-    TabOrder = 1
+    TabOrder = 0
     OnChange = cbDriverChange
   end
   object btnPrev: TAcrylicButton
@@ -54,9 +42,10 @@ object PlayerGUI: TPlayerGUI
     Color = claWhite
     FontColor = claWhite
     BackColor = x640F0F0F
-    BorderColor = x64070707
+    BorderColor = x34777777
     WithBorder = True
     WithBackground = True
+    Ghost = False
     OnClick = btnPrevClick
     OnDblClick = btnPrevDblClick
   end
@@ -75,9 +64,10 @@ object PlayerGUI: TPlayerGUI
     Color = claWhite
     FontColor = claWhite
     BackColor = x640F0F0F
-    BorderColor = x64070707
+    BorderColor = x34777777
     WithBorder = True
     WithBackground = True
+    Ghost = False
     OnClick = btnPlayClick
   end
   object btnNext: TAcrylicButton
@@ -95,9 +85,10 @@ object PlayerGUI: TPlayerGUI
     Color = claWhite
     FontColor = claWhite
     BackColor = x640F0F0F
-    BorderColor = x64070707
+    BorderColor = x34777777
     WithBorder = True
     WithBackground = True
+    Ghost = False
     OnClick = btnNextClick
   end
   object btnOpenFile: TAcrylicButton
@@ -115,9 +106,10 @@ object PlayerGUI: TPlayerGUI
     Color = claWhite
     FontColor = claWhite
     BackColor = x640F0F0F
-    BorderColor = x64070707
+    BorderColor = x34777777
     WithBorder = True
     WithBackground = True
+    Ghost = False
     OnClick = btnOpenFileClick
   end
   object btnDriverControlPanel: TAcrylicButton
@@ -135,9 +127,10 @@ object PlayerGUI: TPlayerGUI
     Color = claWhite
     FontColor = claWhite
     BackColor = x640F0F0F
-    BorderColor = x64070707
+    BorderColor = x34777777
     WithBorder = True
     WithBackground = True
+    Ghost = False
     OnClick = btnDriverControlPanelClick
   end
   object lblTitle: TAcrylicLabel
@@ -158,6 +151,7 @@ object PlayerGUI: TPlayerGUI
     BorderColor = x640F0F0F
     WithBorder = False
     WithBackground = False
+    Ghost = True
   end
   object btnStop: TAcrylicButton
     Left = 347
@@ -174,9 +168,10 @@ object PlayerGUI: TPlayerGUI
     Color = claWhite
     FontColor = claWhite
     BackColor = x640F0F0F
-    BorderColor = x64070707
+    BorderColor = x34777777
     WithBorder = True
     WithBackground = True
+    Ghost = False
     OnClick = btnStopClick
   end
   object lblTime: TAcrylicLabel
@@ -194,9 +189,10 @@ object PlayerGUI: TPlayerGUI
     Color = claWhite
     FontColor = claWhite
     BackColor = x640F0F0F
-    BorderColor = x64070707
+    BorderColor = x34777777
     WithBorder = True
     WithBackground = True
+    Ghost = False
   end
   object pnlBlurHint: TPanel
     Left = 700
@@ -207,7 +203,7 @@ object PlayerGUI: TPlayerGUI
     BevelOuter = bvNone
     ParentShowHint = False
     ShowHint = True
-    TabOrder = 10
+    TabOrder = 9
     object btnBlur: TAcrylicButton
       Left = 0
       Top = 0
@@ -226,6 +222,7 @@ object PlayerGUI: TPlayerGUI
       BorderColor = x64070707
       WithBorder = True
       WithBackground = True
+      Ghost = False
       OnClick = btnBlurClick
     end
   end
@@ -235,11 +232,11 @@ object PlayerGUI: TPlayerGUI
     Width = 445
     Height = 121
     Color = x001F1F1F
-    TabOrder = 11
+    TabOrder = 10
     Ghost = False
     Colored = False
-    Backcolor = 2039583
-    ScrollColor = x00FFFFFF
+    BackColor = 2039583
+    ScrollColor = claWhite
   end
   object knbLevel: TAcrylicKnob
     Left = 426
@@ -259,6 +256,7 @@ object PlayerGUI: TPlayerGUI
     BorderColor = x64070707
     WithBorder = False
     WithBackground = False
+    Ghost = False
     KnobColor = xFFFF8B64
     Level = 0.500000000000000000
     OnChange = knbLevelChange
@@ -281,6 +279,7 @@ object PlayerGUI: TPlayerGUI
     BorderColor = x64070707
     WithBorder = False
     WithBackground = False
+    Ghost = False
     KnobColor = xFFFF8B64
     Level = 0.500000000000000000
     OnChange = knbSpeedChange
@@ -303,6 +302,7 @@ object PlayerGUI: TPlayerGUI
     BorderColor = x64070707
     WithBorder = False
     WithBackground = False
+    Ghost = False
   end
   object lblPitch: TAcrylicLabel
     Left = 420
@@ -322,6 +322,7 @@ object PlayerGUI: TPlayerGUI
     BorderColor = x64070707
     WithBorder = False
     WithBackground = False
+    Ghost = False
   end
   object lblLoading: TAcrylicLabel
     Left = 158
@@ -341,6 +342,50 @@ object PlayerGUI: TPlayerGUI
     BorderColor = x640F0F0F
     WithBorder = False
     WithBackground = False
+    Ghost = True
+  end
+  object tbProgress: TAcrylicTrackBar
+    Left = 144
+    Top = 110
+    Width = 173
+    Height = 20
+    Text = ''
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    Alignment = aCenter
+    Color = claWhite
+    FontColor = claWhite
+    BackColor = x640F0F0F
+    BorderColor = x64070707
+    WithBorder = False
+    WithBackground = False
+    Ghost = False
+    TrackColor = xFF64FFFF
+    OnChange = tbProgressChange
+  end
+  object btnBarFunc: TAcrylicButton
+    Left = 323
+    Top = 110
+    Width = 20
+    Height = 20
+    Text = 'T'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -12
+    Font.Name = 'Tahoma'
+    Font.Style = [fsBold]
+    Alignment = aCenter
+    Color = claWhite
+    FontColor = claWhite
+    BackColor = x640F0F0F
+    BorderColor = x34777777
+    WithBorder = True
+    WithBackground = True
+    Ghost = False
+    OnClick = btnBarFuncClick
   end
   object odOpenFile: TOpenDialog
     Options = [ofHideReadOnly, ofAllowMultiSelect, ofEnableSizing]

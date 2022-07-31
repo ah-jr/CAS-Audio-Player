@@ -47,12 +47,12 @@ uses
   AcrylicGhostPanelU,
   AcrylicControlU,
   AcrylicScrollBoxU,
-  AcrylicKnobU;
+  AcrylicKnobU,
+  AcrylicTrackBarU;
 
 type
   TPlayerGUI = class(TAcrylicForm)
     odOpenFile            : TOpenDialog;
-    tbProgress            : TTrackBar;
     cbDriver              : TComboBox;
     btnPrev               : TAcrylicButton;
     btnPlay               : TAcrylicButton;
@@ -61,6 +61,7 @@ type
     btnDriverControlPanel : TAcrylicButton;
     btnStop               : TAcrylicButton;
     btnBlur               : TAcrylicButton;
+    btnBarFunc            : TAcrylicButton;
     lblTime               : TAcrylicLabel;
     lblTitle              : TAcrylicLabel;
     lblVolume             : TAcrylicLabel;
@@ -70,7 +71,8 @@ type
     knbLevel              : TAcrylicKnob;
     knbSpeed              : TAcrylicKnob;
     pnlBlurHint           : TPanel;
-
+    tbProgress            : TAcrylicTrackBar;
+        
 
     procedure FormCreate                 (Sender: TObject);
     procedure FormDestroy                (Sender: TObject);
@@ -88,6 +90,7 @@ type
     procedure btnUpClick                 (Sender: TObject);
     procedure btnDownClick               (Sender: TObject);
     procedure btnOpenFileClick           (Sender: TObject);
+    procedure btnBarFuncClick            (Sender: TObject);
     procedure trackClick                 (Sender: TObject);
     procedure trackWheelUp               (Sender: TObject; Shift: TShiftState; MousePos: TPoint; var Handled: Boolean);
     procedure trackWheelDown             (Sender: TObject; Shift: TShiftState; MousePos: TPoint; var Handled: Boolean);
@@ -97,8 +100,10 @@ type
 
     procedure WMNCSize(var Message: TWMSize); message WM_SIZE;
 
+
   private
     m_bBlockBufferPositionUpdate : Boolean;
+    m_bPlaylistBar               : Boolean;
     m_nLoadedTrackCount          : Integer;
 
     m_CasEngine                  : TCasEngine;
@@ -146,7 +151,8 @@ uses
   Vcl.Imaging.pngimage,
   CasUtilsU,
   CasTypesU,
-  AcrylicUtilsU;
+  AcrylicUtilsU,
+  AcrylicTypesU;
 
 {$R *.dfm}
 
@@ -163,15 +169,15 @@ begin
   BlurAmount  := 150;
   KeyPreview  := True;
 
-  Resizable   := True;
+  Resizable   := False;
   Width       := 500;
-  Height      := 500;
+  Height      := 700;
 
-  MinHeight   := 500;
   MinWidth    := 500;
+  MinHeight   := 700;
 
-  MaxHeight   := 1000;
-  MaxWidth    := 1000;
+  MaxWidth    := 500;
+  MaxHeight   := 700;
 
   InitializeVariables;
   InitializeControls;
@@ -205,6 +211,9 @@ begin
   btnBlur.FontColor   := $FFFF8B64;
   btnBlur.BorderColor := $1FFF8B64;
 
+  btnBarFunc.FontColor := c_clSeaBlue;
+  btnBarFunc.Text      := 'P';
+
   lblLoading.FontColor := $FFFF8B64;
   lblLoading.Visible   := False;
 
@@ -212,6 +221,8 @@ begin
   btnBlur.Hint         := 'Blur is available in Windows 10';
   pnlBlurHint.ShowHint := True;
   pnlBlurHint.Hint     := btnBlur.Hint;
+
+  btnPrev.TriggerDblClick := True;
 end;
 
 //==============================================================================
@@ -280,6 +291,7 @@ begin
 
   m_nLoadedTrackCount := 0;
 
+  m_bPlaylistBar               := True;
   m_bBlockBufferPositionUpdate := False;
 
   SetLength(m_DriverList, 0);
@@ -327,9 +339,9 @@ end;
 //==============================================================================
 procedure TPlayerGUI.ChangeEnabledObjects;
 begin
+  btnOpenFile.Enabled           := (m_CasEngine.Ready);
   btnDriverControlPanel.Enabled := (m_CasEngine.Ready) and
                                    (m_CasEngine.DriverType = dtASIO);
-  btnOpenFile.Enabled           := (m_CasEngine.Ready);
 
   btnPlay.Enabled               := (m_CasEngine.Ready) and
                                    (m_nLoadedTrackCount > 0);
@@ -337,6 +349,8 @@ begin
   btnStop.Enabled               := (m_nLoadedTrackCount > 0);
   btnPrev.Enabled               := (m_nLoadedTrackCount > 0);
   btnNext.Enabled               := (m_nLoadedTrackCount > 0);
+  btnBarFunc.Enabled            := (m_nLoadedTrackCount > 0);
+  tbProgress.Enabled            := (m_nLoadedTrackCount > 0);
 
   RefreshAcrylicControls(Self);
 end;
@@ -467,12 +481,20 @@ end;
 //==============================================================================
 procedure TPlayerGUI.UpdateBufferPosition;
 var
-  dProgress : Double;
+  CasTrack  : TCasTrack;
 begin
   if not m_bBlockBufferPositionUpdate then
   begin
-    dProgress            := tbProgress.Position/tbProgress.Max;
-    m_CasEngine.Position := Trunc(dProgress * m_CasEngine.Length);
+    if m_bPlaylistBar then
+      m_CasEngine.Position := Trunc(tbProgress.Level * m_CasEngine.Length)
+    else
+    begin
+      if (m_CasEngine.ActiveTracks.Count > 0) and
+         (m_CasEngine.Database.GetTrackById(m_CasEngine.ActiveTracks.Items[0], CasTrack)) then
+      begin
+        m_CasEngine.Position := CasTrack.Position + Trunc(tbProgress.Level * CasTrack.Size);
+      end;
+    end;
   end;
 end;
 
@@ -484,12 +506,26 @@ var
   nPanelIdx : Integer;
 begin
   m_bBlockBufferPositionUpdate := True;
-  tbProgress.Position          := Trunc(m_CasEngine.Progress*tbProgress.Max);
+  if m_bPlaylistBar then
+  begin
+    tbProgress.Level := m_CasEngine.Progress;
+    lblTime.Text     := m_CasEngine.GetTime + '/' + m_CasEngine.GetDuration;
+  end
+  else
+  begin
+    if m_CasEngine.ActiveTracks.Count > 0 then
+    begin
+      tbProgress.Level := m_CasEngine.GetTrackProgress(m_CasEngine.ActiveTracks.Items[0]);
+      lblTime.Text     := m_CasEngine.GetTime + '/' + m_CasEngine.GetDuration;
+    end
+    else
+    begin
+      tbProgress.Level := 0;
+      lblTime.Text     := m_CasEngine.GetTime + '/' + m_CasEngine.GetDuration;
+    end;
+  end;
   m_bBlockBufferPositionUpdate := False;
-  CasTrack                     := nil;
-
-  lblTime.Text := m_CasEngine.GetTime + '/' + m_CasEngine.GetDuration;
-
+  
   for nPanelIdx := 0 to m_lstTracks.Count - 1 do
   begin
     if m_CasEngine.Database.GetTrackByID(StrToInt(String((m_lstTracks.Items[nPanelIdx] as TAcrylicGhostPanel).Name).SubString(3)), CasTrack) then
@@ -557,6 +593,25 @@ begin
     RearrangeTracks;
     RefreshAcrylicControls(Self);
   end;
+end;
+
+//==============================================================================
+procedure TPlayerGUI.btnBarFuncClick(Sender: TObject);
+begin
+  m_bPlaylistBar := not m_bPlaylistBar;
+
+  if m_bPlaylistBar then
+  begin
+    tbProgress.TrackColor := c_clSeaBlue;
+    btnBarFunc.FontColor  := c_clSeaBlue;
+    btnBarFunc.Text       := 'P';
+  end
+  else
+  begin
+    tbProgress.TrackColor := c_clLavaOrange;
+    btnBarFunc.FontColor  := c_clLavaOrange;
+    btnBarFunc.Text       := 'T';
+  end
 end;
 
 //==============================================================================
@@ -681,11 +736,8 @@ var
 begin
   if m_CasEngine.Database.GetTrackByID(StrToInt(String((Sender as TAcrylicButton).Parent.Name).SubString(3)), CasTrack) then
   begin
-    m_CasEngine.Playlist.RemoveTrack(CasTrack.ID);
-    m_CasEngine.MainMixer.RemoveTrack(CasTrack.ID);
     m_CasEngine.Position := m_CasEngine.Position - CasTrack.Size;
-
-    CasTrack.Destroy;
+    m_CasEngine.DeleteTrack(CasTrack.ID);
   end;
 
   m_lstTracks.Remove((Sender as TAcrylicButton).Parent as TAcrylicGhostPanel);

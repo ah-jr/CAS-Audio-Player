@@ -37,7 +37,8 @@ uses
   AcrylicTypesU      in 'deps\TAcrylicForm\src\AcrylicTypesU.pas',
   AcrylicUtilsU      in 'deps\TAcrylicForm\src\AcrylicUtilsU.pas',
   AcrylicTrackU      in 'deps\TAcrylicForm\src\AcrylicTrackU.pas',
-  AcrylicKnobU       in 'deps\TAcrylicForm\src\AcrylicKnobU.pas';
+  AcrylicKnobU       in 'deps\TAcrylicForm\src\AcrylicKnobU.pas',
+  AcrylicTrackBarU   in 'deps\TAcrylicForm\src\AcrylicTrackBarU.pas';
 
 
 {$R *.res}
