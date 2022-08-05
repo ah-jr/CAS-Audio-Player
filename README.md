@@ -6,7 +6,7 @@ It's possible to edit the playlist, moving tracks up and down and removing them.
 ![](docs/current.png)  
 
 # How to compile
-- Checkout the last synced version (v1.0). This is important for the dependencies to work properly.
-- Clone [CAS-Engine v1.5](https://github.com/ah-jr/CAS-Engine) inside "deps\CasAudioEngine\".
-- Clone [TAcrylicForm v1.3](https://github.com/ah-jr/TAcrylicForm) inside "deps\TAcrylicForm\".
+- Checkout the last synced version (v1.1). This is important for the dependencies to work properly.
+- Clone [CAS-Engine v1.7](https://github.com/ah-jr/CAS-Engine) inside "deps\CasAudioEngine\".
+- Clone [TAcrylicForm v1.4](https://github.com/ah-jr/TAcrylicForm) inside "deps\TAcrylicForm\".
 - Open "src\CAS_AudioPlayer" and compile.

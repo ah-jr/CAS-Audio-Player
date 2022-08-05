@@ -2,11 +2,24 @@
 CAS AudioPlayer - PATCH NOTES 
 ==============================================================================
 
+v1.1:
+
+  - DirectSound support added.
+  - Added time/duration label.
+  - Changed form size.
+  - Added a button to turn on/off the Acrylic effect.
+  - Shift + Wheel up/down on tracks now rearrange them.
+  - Inserted tracks in a scrollbox
+  - Changed level and speed controls to knobs.
+  - Added button to switch trackbar to playlist/track's position.
+  - Removed maximize button.
+  - General changes in app's appearance. 
+
 v1.0:
-  New functionalities:		
-  - Next/previous button
-  - Visualization of waveform of the tracks being played.
-  - Buttons to navigate between tracks, clone and remove.
+	
+  - New Next/previous button
+  - Added visualization of waveform of the tracks being played.
+  - Added buttons to navigate between tracks, clone and remove.
 
 v1.0b:
 
