@@ -126,6 +126,7 @@ type
 
     procedure InitializeVariables;
     procedure InitializeControls;
+    procedure SetupInfoFrame;
     procedure LoadFiles;
     procedure ChangeEnabledObjects;
     procedure UpdateBufferPosition;
@@ -169,7 +170,6 @@ uses
 //==============================================================================
 procedure TPlayerGUI.FormCreate(Sender: TObject);
 begin
-  Inherited;
   Caption     := 'CAS Audio Player';
   Resizable   := False;
   BlurColor   := $000000;
@@ -189,11 +189,16 @@ begin
   MaxWidth    := 500;
   MaxHeight   := 700;
 
+  Style       := [fsClose, fsMinimize];
+
   InitializeVariables;
   InitializeControls;
+  SetupInfoFrame;
   LoadFiles;
 
   ChangeEnabledObjects;
+
+  Inherited;
 end;
 
 //==============================================================================
@@ -237,12 +242,61 @@ begin
 
   btnInfo.FontColor    := $FFFF8B64;
   btnInfo.BorderColor  := $1FFF8B64;
+end;
 
-  m_frameInfo          := TAcrylicFrame.Create(Self);
-  m_frameInfo.Parent   := Self;
-  m_frameInfo.Visible  := False;
-  m_frameInfo.Left     := (ClientWidth  - m_frameInfo.Width)  div 2;
-  m_frameInfo.Top      := (ClientHeight - m_frameInfo.Height) div 2;
+//==============================================================================
+procedure TPlayerGUI.SetupInfoFrame;
+var
+  lblTitle : TAcrylicLabel;
+  lblText  : TAcrylicLabel;
+begin
+  m_frameInfo           := TAcrylicFrame.Create(Self);
+  m_frameInfo.Parent    := Self;
+  m_frameInfo.Resisable := False;
+  m_frameInfo.Width     := 300;
+  m_frameInfo.Height    := 350;
+  m_frameInfo.Left      := (ClientWidth  - m_frameInfo.Width)  div 2;
+  m_frameInfo.Top       := (ClientHeight - m_frameInfo.Height) div 2;
+  m_frameInfo.Title     := 'Information';
+  m_frameInfo.Visible   := False;
+
+  lblTitle                := TAcrylicLabel.Create(m_frameInfo.Body);
+  lblTitle.Parent         := m_frameInfo.Body;
+  lblTitle.Left           := 5;
+  lblTitle.Top            := 5;
+  lblTitle.Width          := m_frameInfo.Width - 10;
+  lblTitle.Height         := 40;
+  lblTitle.Color          := m_frameInfo.Body.Color;
+  lblTitle.WithBackground := True;
+  lblTitle.Font.Size      := 11;
+  lblTitle.Font.Style     := [fsBold];
+  lblTitle.Text           := 'Cas Audio Player 1.0';
+
+  lblText                := TAcrylicLabel.Create(m_frameInfo.Body);
+  lblText.Parent         := m_frameInfo.Body;
+  lblText.Left           := 5;
+  lblText.Top            := 45;
+  lblText.Width          := m_frameInfo.Width - 10;
+  lblText.Height         := m_frameInfo.Height - 10;
+  lblText.Color          := m_frameInfo.Body.Color;
+  lblText.Font.Size      := 9;
+  lblText.WithBackground := True;
+
+  lblText.Texts.Add('Created by A. H. Junior - 2021');
+  lblText.Texts.Add('Version 1.0');
+  lblText.Texts.Add('');
+  lblText.Texts.Add('Extra functionalities:');
+  lblText.Texts.Add(' 1. Shift + scroll in tracks to rearrange them');
+  lblText.Texts.Add(' 2. Press numbers (1-9) to jump to a specific ');
+  lblText.Texts.Add('    track');
+  lblText.Texts.Add(' 3. Double click in knobs to reset value (0.5)');
+  lblText.Texts.Add(' 4. Press P/T button to change trackbar to');
+  lblText.Texts.Add('    playlist/track mode');
+  lblText.Texts.Add(' 5. Press SpaceBar to play/pause');
+  lblText.Texts.Add('');
+  lblText.Texts.Add('');
+  lblText.Texts.Add('Add your suggestions as Issues at:');
+  lblText.Texts.Add('https://github.com/ah-jr/CAS-Audio-Player');
 end;
 
 //==============================================================================
