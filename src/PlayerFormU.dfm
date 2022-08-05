@@ -327,7 +327,7 @@ object PlayerGUI: TPlayerGUI
   object lblLoading: TAcrylicLabel
     Left = 158
     Top = 8
-    Width = 126
+    Width = 99
     Height = 17
     Text = 'Loading files...'
     Font.Charset = DEFAULT_CHARSET
@@ -386,6 +386,27 @@ object PlayerGUI: TPlayerGUI
     WithBackground = True
     Ghost = False
     OnClick = btnBarFuncClick
+  end
+  object btnInfo: TAcrylicButton
+    Left = 263
+    Top = 6
+    Width = 21
+    Height = 21
+    Text = '?'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = [fsBold]
+    Alignment = aCenter
+    Color = claWhite
+    FontColor = claWhite
+    BackColor = x640F0F0F
+    BorderColor = claChocolate
+    WithBorder = True
+    WithBackground = True
+    Ghost = False
+    OnClick = btnInfoClick
   end
   object odOpenFile: TOpenDialog
     Options = [ofHideReadOnly, ofAllowMultiSelect, ofEnableSizing]

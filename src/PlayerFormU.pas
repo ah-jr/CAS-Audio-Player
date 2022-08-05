@@ -48,6 +48,7 @@ uses
   AcrylicControlU,
   AcrylicScrollBoxU,
   AcrylicKnobU,
+  AcrylicFrameU,
   AcrylicTrackBarU;
 
 type
@@ -62,6 +63,7 @@ type
     btnStop               : TAcrylicButton;
     btnBlur               : TAcrylicButton;
     btnBarFunc            : TAcrylicButton;
+    btnInfo               : TAcrylicButton;
     lblTime               : TAcrylicLabel;
     lblTitle              : TAcrylicLabel;
     lblVolume             : TAcrylicLabel;
@@ -72,6 +74,7 @@ type
     knbSpeed              : TAcrylicKnob;
     pnlBlurHint           : TPanel;
     tbProgress            : TAcrylicTrackBar;
+
         
 
     procedure FormCreate                 (Sender: TObject);
@@ -91,6 +94,7 @@ type
     procedure btnDownClick               (Sender: TObject);
     procedure btnOpenFileClick           (Sender: TObject);
     procedure btnBarFuncClick            (Sender: TObject);
+    procedure btnInfoClick               (Sender: TObject);
     procedure trackClick                 (Sender: TObject);
     procedure trackWheelUp               (Sender: TObject; Shift: TShiftState; MousePos: TPoint; var Handled: Boolean);
     procedure trackWheelDown             (Sender: TObject; Shift: TShiftState; MousePos: TPoint; var Handled: Boolean);
@@ -104,6 +108,7 @@ type
   private
     m_bBlockBufferPositionUpdate : Boolean;
     m_bPlaylistBar               : Boolean;
+    m_bStartPlaying              : Boolean;
     m_nLoadedTrackCount          : Integer;
 
     m_CasEngine                  : TCasEngine;
@@ -111,6 +116,8 @@ type
 
     m_DriverList                 : TAsioDriverList;
     m_lstTracks                  : TList<TAcrylicGhostPanel>;
+    m_lstFiles                   : TStringList;
+    m_frameInfo                  : TAcrylicFrame;
 
     procedure EngineNotification(var MsgRec: TMessage); message CM_NotifyOwner;
     procedure DecodeReady       (var MsgRec: TMessage); message CM_NotifyDecode;
@@ -119,11 +126,13 @@ type
 
     procedure InitializeVariables;
     procedure InitializeControls;
+    procedure LoadFiles;
     procedure ChangeEnabledObjects;
     procedure UpdateBufferPosition;
     procedure UpdateProgressBar;
     procedure RearrangeTracks;
     procedure SwapTracks(a_nTrack1, a_nTrack2 : Integer);
+
 end;
 
 const
@@ -151,6 +160,7 @@ uses
   Vcl.Imaging.pngimage,
   CasUtilsU,
   CasTypesU,
+  Registry,
   AcrylicUtilsU,
   AcrylicTypesU;
 
@@ -166,7 +176,7 @@ begin
   BackColor   := $1F1F1F;
   WithBorder  := True;
   BorderColor := $A064FFFF;
-  BlurAmount  := 150;
+  BlurAmount  := 210;
   KeyPreview  := True;
 
   Resizable   := False;
@@ -181,6 +191,7 @@ begin
 
   InitializeVariables;
   InitializeControls;
+  LoadFiles;
 
   ChangeEnabledObjects;
 end;
@@ -223,6 +234,29 @@ begin
   pnlBlurHint.Hint     := btnBlur.Hint;
 
   btnPrev.TriggerDblClick := True;
+
+  btnInfo.FontColor    := $FFFF8B64;
+  btnInfo.BorderColor  := $1FFF8B64;
+
+  m_frameInfo          := TAcrylicFrame.Create(Self);
+  m_frameInfo.Parent   := Self;
+  m_frameInfo.Visible  := False;
+  m_frameInfo.Left     := (ClientWidth  - m_frameInfo.Width)  div 2;
+  m_frameInfo.Top      := (ClientHeight - m_frameInfo.Height) div 2;
+end;
+
+//==============================================================================
+procedure TPlayerGUI.LoadFiles;
+begin
+  if ParamCount > 0 then
+  begin
+    m_lstFiles.Clear;
+    m_lstFiles.Add(ParamStr(1));
+    m_bStartPlaying    := True;
+    lblLoading.Visible := True;
+
+    m_CasDecoder.AsyncDecodeFile(Handle, m_lstFiles, m_CasEngine.SampleRate);
+  end;
 end;
 
 //==============================================================================
@@ -236,7 +270,8 @@ begin
   for pnlPanel in m_lstTracks do
     pnlPanel.Destroy;
 
-  m_lstTracks.Free;
+  FreeAndNil(m_lstTracks);
+  FreeAndNil(m_lstFiles);
 
   SetLength(m_DriverList, 0);
 end;
@@ -249,6 +284,7 @@ begin
   inherited;
 
   pnlBlurHint.Left := ClientWidth - pnlBlurHint.Width - c_nBntBlurRight;
+  btnInfo.Left     := pnlBlurHint.Left - btnInfo.Width - 5;
 
   sbTracks.Width  := ClientWidth  - 50;
   sbTracks.Height := ClientHeight - 170;
@@ -274,6 +310,9 @@ procedure TPlayerGUI.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftSt
 begin
   if Key = VK_SPACE then
     btnPlayClick(nil);
+
+  if GE_L(Key, $30, $3A) and ((Key - 49) <  m_lstTracks.Count) then
+    m_CasEngine.GoToTrack(StrToInt(String((m_lstTracks.Items[Key - 49] as TAcrylicGhostPanel).Name).SubString(3)));
 end;
 
 //==============================================================================
@@ -285,6 +324,7 @@ begin
   m_CasDecoder  := TCasDecoder.Create;
 
   m_lstTracks   := TList<TAcrylicGhostPanel>.Create;
+  m_lstFiles    := TStringList.Create;
 
   knbLevel.Level := 0.7;
   knbSpeed.Level := 0.5;
@@ -292,6 +332,7 @@ begin
   m_nLoadedTrackCount := 0;
 
   m_bPlaylistBar               := True;
+  m_bStartPlaying              := False;
   m_bBlockBufferPositionUpdate := False;
 
   SetLength(m_DriverList, 0);
@@ -330,6 +371,9 @@ begin
     m_CasEngine.AddTrackToPlaylist(CasTrack.ID, m_CasEngine.Length);
     AddTrackInfo(CasTrack);
   end;
+
+  if m_bStartPlaying then
+    btnPlayClick(nil);
 
   lblLoading.Visible := False;
   m_CasDecoder.Tracks.Clear;
@@ -394,6 +438,12 @@ procedure TPlayerGUI.btnDriverControlPanelClick(Sender: TObject);
 begin
   if m_CasEngine.Ready then
     m_CasEngine.ControlPanel;
+end;
+
+//==============================================================================
+procedure TPlayerGUI.btnInfoClick(Sender: TObject);
+begin
+  m_frameInfo.Visible := not m_frameInfo.Visible;
 end;
 
 //==============================================================================
